@@ -7,25 +7,41 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
   <div class="grid">
+    <!-- Row 1: Headers & Controls -->
     <div class="panel">
       <h2>Source Ecoregion</h2>
+      <p>Select a city profile</p>
       <select id="city-selector"></select>
-      
+    </div>
+
+    <div class="panel">
+      <h2>Algorithmic Match</h2>
+      <p>Closest visual vector</p>
+      <div class="match-header-box">
+        <div id="match-title" class="match-heading">Awaiting choice...</div>
+      </div>
+    </div>
+
+    <!-- Row 2: Flora Palettes (Perfectly Level) -->
+    <div class="panel">
       <div class="label">Dynamic Native Flora</div>
       <div id="src-flora" class="strip"></div>
-      
+    </div>
+
+    <div class="panel">
+      <div class="label">Matched Native Flora</div>
+      <div id="match-flora" class="strip"></div>
+    </div>
+
+    <!-- Row 3: Soil Palettes (Perfectly Level) -->
+    <div class="panel">
       <div class="label">Automated Soil Horizon</div>
       <div id="src-soil" class="strip"></div>
     </div>
 
     <div class="panel">
-      <h2>Algorithmic Match</h2>
-      <div id="match-title" class="match-heading">Calculating climate vec...</div>
-      
-      <div class="label">Matched Native Flora</div>
-      <div id="match-flora" class="strip"></div>
-      
       <div class="label">Matched Soil Horizon</div>
       <div id="match-soil" class="strip"></div>
     </div>
