@@ -285,7 +285,7 @@ async function getWikipediaCoords(cityName, region) {
       return null;
     }
     
-    const matchedTitle = searchData.query.search.title;
+    const matchedTitle = searchData.query.search[0].title;
     printLog(`✅ WIKI MATCH STRIKE: Search found page match: "${matchedTitle}"`, "success");
     
     const coordsUrl = `https://wikipedia.org{encodeURIComponent(matchedTitle)}&format=json&origin=*`;
