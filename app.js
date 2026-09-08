@@ -105,7 +105,7 @@ const chinaCities = [
   "Zhoushan",
   "Zhuhai"
 ];
-// --- HIGHLY VOCAL AUTOMATED PIPELINE & VIBE-DEBUGGER ---
+// --- HIGHLY VOCAL PIPELINE WITH SEPARATE BOX REPORTERS ---
 
 const selector = document.getElementById('city-selector');
 
@@ -115,7 +115,8 @@ function initializeDropdown() {
   ukGroup.label = "United Kingdom Ecoregions";
   ukCities.forEach(city => {
     let opt = document.createElement('option');
-    opt.value = `${city}, UK`;
+    opt.value = city; // Store just the clean name
+    opt.dataset.region = "UK"; // Tag the region on a hidden attribute
     opt.textContent = city;
     ukGroup.appendChild(opt);
   });
@@ -124,53 +125,72 @@ function initializeDropdown() {
   chinaGroup.label = "China Ecoregions";
   chinaCities.forEach(city => {
     let opt = document.createElement('option');
-    opt.value = `${city}, China`;
+    opt.value = city; // Store just the clean name
+    opt.dataset.region = "China"; // Tag the region on a hidden attribute
     opt.textContent = city;
     chinaGroup.appendChild(opt);
   });
 
   selector.appendChild(ukGroup);
   selector.appendChild(chinaGroup);
-  console.log("🐛 DEBUG: Dropdown fully populated.");
 }
 
-async function processEcoregion(targetSelection) {
+// Helper to set individual box messages immediately
+function updateBoxStatus(id, text, isError = false) {
+  const el = document.getElementById(id);
+  if (isError) {
+    el.innerHTML = `<div style="padding:10px; color:#ef476f; font-size:0.75rem; text-align:center;">⚠️ ${text}</div>`;
+  } else {
+    el.innerHTML = `<div style="padding:10px; color:var(--muted); font-size:0.75rem; text-align:center;">⏳ ${text}</div>`;
+  }
+}
+
+async function processEcoregion(cityName) {
   const matchHeading = document.getElementById('match-title');
-  console.log(`\n🚀 MAIN: Processing selection change -> "${targetSelection}"`);
-  matchHeading.innerText = `📡 Fetching coordinates for ${targetSelection.split(',')[0]}...`;
+  const selectedOption = selector.options[selector.selectedIndex];
+  const currentRegion = selectedOption.dataset.region;
+
+  console.log(`\n🚀 MAIN: Processing selection -> "${cityName}" (${currentRegion})`);
+  
+  // Set all 4 layout blocks to active loading states independently
+  updateBoxStatus('src-flora', `Searching ${cityName} flora indices...`);
+  updateBoxStatus('src-soil', `Analyzing ${cityName} geological stratum...`);
+  updateBoxStatus('match-flora', 'Awaiting algorithm calculation...');
+  updateBoxStatus('match-soil', 'Awaiting algorithm calculation...');
+  
+  matchHeading.innerText = `📡 Mapping coordinates for ${cityName}...`;
 
   try {
     // Step A: Fetch Coordinates for the chosen source city
-    const srcCoords = await getWikipediaCoords(targetSelection);
+    const srcCoords = await getWikipediaCoords(cityName, currentRegion);
     if (!srcCoords) {
-      throw new Error(`Wikipedia has no coordinate matrix for "${targetSelection}". It may be spelled slightly differently on their main page.`);
+      const errMsg = "Wikipedia coordinate map missing";
+      updateBoxStatus('src-flora', errMsg, true);
+      updateBoxStatus('src-soil', errMsg, true);
+      throw new Error(`Could not find coordinate data for "${cityName}"`);
     }
-    console.log(`🐛 DEBUG: Source city coordinates locked: Lat ${srcCoords.lat}, Lon ${srcCoords.lon}`);
+    console.log(`🐛 DEBUG: Source coordinates locked: Lat ${srcCoords.lat}, Lon ${srcCoords.lon}`);
 
-    // Step B: Set up opposing pools
-    const isUKSelection = targetSelection.endsWith(', UK');
-    const opposingPool = isUKSelection ? chinaCities : ukCities;
-    const opposingSuffix = isUKSelection ? ', China' : ', UK';
+    // Step B: Set up opposing pools based on region tags
+    const isUK = currentRegion === "UK";
+    const opposingPool = isUK ? chinaCities : ukCities;
+    const opposingRegion = isUK ? "China" : "UK";
 
-    matchHeading.innerText = `🧮 Gathering coordinates for all ${opposingPool.length} opposing cities simultaneously...`;
-    console.log(`🐛 DEBUG: Querying ${opposingPool.length} records in parallel to prevent browser freezing.`);
+    matchHeading.innerText = `🧮 Calculating distance vectors across ${opposingPool.length} ecoregions...`;
 
-    // Optimization: Request ALL 50 coordinates at the exact same time in parallel
+    // Process background coordinate calculations
     const coordinateRequests = opposingPool.map(candidate => 
-      getWikipediaCoords(`${candidate}${opposingSuffix}`).then(coords => ({ name: candidate, coords }))
+      getWikipediaCoords(candidate, opposingRegion).then(coords => ({ name: candidate, coords }))
     );
     const resolvedCandidates = await Promise.all(coordinateRequests);
 
-    matchHeading.innerText = "📐 Computing closest Euclidean vector distance...";
-    
     let bestMatchCity = null;
     let closestDistance = Infinity;
-    let successfulFetches = 0;
+    let bestMatchCoords = null;
 
-    // Step C: Run the Nearest-Neighbor vector logic
+    // Step C: Run Nearest-Neighbor logic over the gathered data
     for (let item of resolvedCandidates) {
       if (item.coords) {
-        successfulFetches++;
         const distance = Math.sqrt(
           Math.pow(srcCoords.lat - item.coords.lat, 2) + 
           Math.pow(srcCoords.lon - item.coords.lon, 2)
@@ -178,44 +198,36 @@ async function processEcoregion(targetSelection) {
         
         if (distance < closestDistance) {
           closestDistance = distance;
-          bestMatchCity = `${item.name}${opposingSuffix}`;
+          bestMatchCity = item.name;
+          bestMatchCoords = item.coords;
         }
       }
     }
 
-    console.log(`🐛 DEBUG: Successfully calculated vectors for ${successfulFetches}/${opposingPool.length} opposing cities.`);
-
     if (!bestMatchCity) {
-      throw new Error(`The algorithm failed because Wikipedia blocked all ${opposingPool.length} background candidate requests. Try reloading in a few seconds.`);
+      const failMsg = "Background candidate loop failed";
+      updateBoxStatus('match-flora', failMsg, true);
+      updateBoxStatus('match-soil', failMsg, true);
+      throw new Error("Could not compute nearest-neighbor match.");
     }
 
-    console.log(`🎯 MATCH FOUND: "${bestMatchCity}" is the closest ecological vector match.`);
-    matchHeading.innerText = `Closest Vector Match: ${bestMatchCity.split(',')[0]}`;
+    console.log(`🎯 MATCH FOUND: "${bestMatchCity}" is the closest match.`);
+    matchHeading.innerText = `Closest Vector Match: ${bestMatchCity}, ${opposingRegion}`;
 
-    // Step D: Construct the dynamic scientific palettes for both cities on the fly
+    // Step D: Successfully trigger individual palette builders
     generateAutomatedPalettes(srcCoords, 'src-flora', 'src-soil');
-    
-    // Find the coordinates of the winner from our pre-fetched list
-    const winnerData = resolvedCandidates.find(x => `${x.name}${opposingSuffix}` === bestMatchCity);
-    if (winnerData && winnerData.coords) {
-      generateAutomatedPalettes(winnerData.coords, 'match-flora', 'match-soil');
-    }
+    generateAutomatedPalettes(bestMatchCoords, 'match-flora', 'match-soil');
 
   } catch (err) {
-    console.error("❌ CRITICAL ERROR CAPTURED:", err.message);
-    // Display the highly descriptive error message right inside the dashboard panel!
+    console.error("❌ MAIN CRITICAL EXCEPTION:", err.message);
     matchHeading.innerText = `⚠️ Fail: ${err.message}`;
-    
-    // Clear out palettes so old data doesn't sit lingering on screen during a failure
-    document.getElementById('src-flora').innerHTML = '';
-    document.getElementById('src-soil').innerHTML = '';
-    document.getElementById('match-flora').innerHTML = '';
-    document.getElementById('match-soil').innerHTML = '';
   }
 }
 
-async function getWikipediaCoords(cityName) {
+// Improved Wikipedia Coordinate Finder (Bypasses exact string blocks)
+async function getWikipediaCoords(cityName, region) {
   try {
+    // We pass just the clean city name to Wikipedia's search array to maximize hits
     const url = `https://wikipedia.org{encodeURIComponent(cityName)}&format=json&origin=*`;
     const response = await fetch(url);
     if (!response.ok) return null;
@@ -223,9 +235,22 @@ async function getWikipediaCoords(cityName) {
     const data = await response.json();
     const pages = data.query.pages;
     const pageId = Object.keys(pages);
-    return pages[pageId].coordinates ? pages[pageId].coordinates : null;
+    
+    // If found, send it back immediately!
+    if (pages[pageId].coordinates) {
+      return pages[pageId].coordinates;
+    }
+    
+    // Fallback: If Wikipedia is picky, append country details to assist search context
+    const fallbackTitle = region === "UK" ? `${cityName}, United Kingdom` : `${cityName}, China`;
+    const fallbackUrl = `https://wikipedia.org{encodeURIComponent(fallbackTitle)}&format=json&origin=*`;
+    const fbResponse = await fetch(fallbackUrl);
+    const fbData = await fbResponse.json();
+    const fbPages = fbData.query.pages;
+    const fbPageId = Object.keys(fbPages);
+    
+    return fbPages[fbPageId].coordinates ? fbPages[fbPageId].coordinates : null;
   } catch (e) {
-    console.warn(`⚠️ Warning: Failed fetch request for "${cityName}". Network throttled.`);
     return null;
   }
 }
@@ -249,8 +274,7 @@ function generateAutomatedPalettes(coords, floraContainerId, soilContainerId) {
   document.getElementById(soilContainerId).innerHTML = soilPalette.map(color => `<div class="bar" style="background:${color}"></div>`).join('');
 }
 
-// --- BOOT SEQUENCE ---
+// --- INITIALISE ---
 initializeDropdown();
 selector.onchange = (e) => processEcoregion(e.target.value);
 processEcoregion(selector.value);
-
