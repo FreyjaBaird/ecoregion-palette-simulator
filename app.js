@@ -262,7 +262,7 @@ async function processEcoregion(cityName) {
 async function getWikipediaCoords(cityName, region) {
   try {
     const fullSearchQuery = region === "UK" ? `${cityName} United Kingdom` : `${cityName} China`;
-    const searchUrl = `https://wikipedia.org${encodeURIComponent(fullSearchQuery)}&format=json&origin=*`;
+    const searchUrl = `https://en.wikipedia.org/${encodeURIComponent(fullSearchQuery)}&format=json&origin=*`;
     
     // Vocal Log: What is the code sending right now?
     printLog(`📡 TRANSMITTING SEARCH TO WIKI: Querying string "${fullSearchQuery}"`, "info");
