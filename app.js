@@ -321,6 +321,13 @@ function writeEcologicalTexts(srcCoords, matchCoords, srcName, matchName, srcReg
         ? "Dominant Flora: <strong>Sub subtropical Broadleaf Evergreen Forest</strong> (Camellia, Castanopsis, native Bamboo). Thrives under monsoonal humidity."
         : "Dominant Flora: <strong>Mixed Temperate Canopy</strong> (Korean Pine, East Asian Deciduous Oaks). Tolerates wide continental winter shifts.";
     }
+    // Calculate the raw geographical variance score
+  const latDiff = Math.abs(srcCoords.lat - matchCoords.lat).toFixed(2);
+  const lonDiff = Math.abs(srcCoords.lon - matchCoords.lon).toFixed(2);
+  
+  // FIX: Inject the written mathematical reason into our new HTML text box
+  document.getElementById('match-justification-text').innerHTML = 
+    "Vector variance delta: <strong>Δ" + latDiff + "° Lat</strong> / <strong>Δ" + lonDiff + "° Lon</strong>. This candidate yields the absolute lowest spatial Euclidean distance threshold within your opposing ecoregion data pool.";
   }
 
   function getSoilText(coords) {
