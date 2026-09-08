@@ -105,13 +105,27 @@ const chinaCities = [
   "Zhoushan",
   "Zhuhai"
 ];
-// --- FIXED AUTOMATED PIPELINE LOGIC WITH EXPLICIT ENCODERS ---
+// --- DYNAMIC TERMINAL LOGGER & SAFE CONTROL MECHANICS ---
 
 const selector = document.getElementById('city-selector');
 const matchSelector = document.getElementById('match-selector');
+const terminal = document.getElementById('terminal-log');
+
+// Specialized custom logger function that writes text directly onto your screen!
+function printLog(message, type = 'normal') {
+  if (!terminal) return;
+  const entry = document.createElement('div');
+  entry.className = `log-entry log-${type}`;
+  
+  const timestamp = new Date().toLocaleTimeString();
+  entry.innerText = `[${timestamp}] ${message}`;
+  
+  terminal.appendChild(entry);
+  terminal.scrollTop = terminal.scrollHeight; // Auto-scrolls downwards to stay live
+}
 
 function initializeDropdown() {
-  console.log("🐛 DEBUG: Initialising dropdown selectors...");
+  printLog("Initializing dropdown interface...", "info");
   const ukGroup = document.createElement('optgroup');
   ukGroup.label = "United Kingdom Ecoregions";
   ukCities.forEach(city => {
@@ -134,6 +148,7 @@ function initializeDropdown() {
 
   selector.appendChild(ukGroup);
   selector.appendChild(chinaGroup);
+  printLog("Dropdown list successfully populated.", "success");
 }
 
 function updateBoxStatus(id, text, isError = false) {
@@ -146,11 +161,12 @@ function updateBoxStatus(id, text, isError = false) {
 }
 
 async function processEcoregion(cityName) {
-  if (!cityName) return;
+  if (!cityName || typeof cityName !== 'string') return;
+  
   const selectedOption = selector.options[selector.selectedIndex];
   const currentRegion = selectedOption ? selectedOption.dataset.region : "UK";
 
-  console.log(`\n🚀 MAIN: Processing selection -> "${cityName}" (${currentRegion})`);
+  printLog(`Starting vector execution loop for city: "${cityName}" (${currentRegion})`, "info");
   
   updateBoxStatus('src-flora', `Searching ${cityName} flora...`);
   updateBoxStatus('src-soil', `Analyzing ${cityName} stratum...`);
@@ -160,34 +176,52 @@ async function processEcoregion(cityName) {
   matchSelector.innerHTML = `<option>📡 Calculating nearest vector...</option>`;
 
   try {
-    // Step A: Fetch Coordinates using our unblockable pipeline mapping engine
+    // Step A: Fetch coordinates for source city
+    printLog(`Connecting to Wikipedia for geolocation data -> "${cityName}"...`);
     const srcCoords = await getWikipediaCoords(cityName, currentRegion);
+    
     if (!srcCoords) {
       const errMsg = "Coordinate map missing";
       updateBoxStatus('src-flora', errMsg, true);
       updateBoxStatus('src-soil', errMsg, true);
       matchSelector.innerHTML = `<option>⚠️ Location matrix offline</option>`;
-      throw new Error(`Could not find coordinate data for "${cityName}"`);
+      printLog(`Wikipedia failed to provide a spatial match for "${cityName}". Connection refused or misspelled.`, "error");
+      throw new Error("Source location unmappable.");
     }
-    console.log(`🐛 DEBUG: Source coordinates locked: Lat ${srcCoords.lat}, Lon ${srcCoords.lon}`);
+    
+    printLog(`Source locked successfully! Latitude: ${srcCoords.lat}, Longitude: ${srcCoords.lon}`, "success");
 
     const isUK = currentRegion === "UK";
     const opposingPool = isUK ? chinaCities : ukCities;
     const opposingRegion = isUK ? "China" : "UK";
 
-    // Step B: Resolve coordinates for background candidates concurrently
-    const coordinateRequests = opposingPool.map(candidate => 
-      getWikipediaCoords(candidate, opposingRegion).then(coords => ({ name: candidate, coords }))
-    );
-    const resolvedCandidates = await Promise.all(coordinateRequests);
+    printLog(`Querying background coordinates for opposing pool (${opposingPool.length} candidate cities)...`, "info");
+
+    // Symmetrical, safety throttled sequence loop to prevent connection flooding
+    let resolvedCandidates = [];
+    let processedCount = 0;
+
+    for (let candidate of opposingPool) {
+      processedCount++;
+      if (processedCount % 10 === 0) {
+        printLog(`Background progress status: Checked ${processedCount}/${opposingPool.length} vectors...`);
+      }
+      
+      const coords = await getWikipediaCoords(candidate, opposingRegion);
+      resolvedCandidates.push({ name: candidate, coords });
+    }
+
+    printLog("Background pool coordinate resolution completed. Evaluating vectors...", "info");
 
     let bestMatchCity = null;
     let closestDistance = Infinity;
     let bestMatchCoords = null;
+    let functionalMatches = 0;
 
-    // Step C: Execute Nearest-Neighbor math vectors
+    // Step C: Run spatial vector calculation formulas
     for (let item of resolvedCandidates) {
       if (item.coords) {
+        functionalMatches++;
         const distance = Math.sqrt(
           Math.pow(srcCoords.lat - item.coords.lat, 2) + 
           Math.pow(srcCoords.lon - item.coords.lon, 2)
@@ -201,29 +235,32 @@ async function processEcoregion(cityName) {
       }
     }
 
+    printLog(`Vector tracking completed. Successfully collected coordinate points for ${functionalMatches}/${opposingPool.length} candidates.`, "info");
+
     if (!bestMatchCity) {
       const failMsg = "Candidate loop failed";
       updateBoxStatus('match-flora', failMsg, true);
       updateBoxStatus('match-soil', failMsg, true);
       matchSelector.innerHTML = `<option>⚠️ Vector calculation dropped</option>`;
-      throw new Error("Could not compute nearest-neighbor match.");
+      printLog("Fatal: The engine could not assemble vectors because all background API calls failed.", "error");
+      throw new Error("Nearest-neighbor calculation failure.");
     }
 
-    console.log(`🎯 MATCH FOUND: "${bestMatchCity}" is the closest match.`);
+    printLog(`Match calculated: "${bestMatchCity}" is your nearest ecological twin!`, "success");
     matchSelector.innerHTML = `<option>Partner Match: ${bestMatchCity}, ${opposingRegion}</option>`;
 
-    // Step D: Run scientific palette renderings using calculated lat/long offsets
+    // Step D: Successfully paint color grids onto panels
     generateAutomatedPalettes(srcCoords, 'src-flora', 'src-soil');
     generateAutomatedPalettes(bestMatchCoords, 'match-flora', 'match-soil');
+    printLog("Aesthetic color spectrum generated from coordinate matrices successfully.", "success");
 
   } catch (err) {
-    console.error("❌ MAIN CRITICAL EXCEPTION:", err.message);
+    printLog(`Loop broken: ${err.message}`, "error");
   }
 }
 
 async function getWikipediaCoords(cityName, region) {
   try {
-    // Append descriptive fallback context inline directly inside the URL request query
     const searchTitle = region === "UK" ? `${cityName}, United Kingdom` : `${cityName}, China`;
     const url = `https://wikipedia.org{encodeURIComponent(searchTitle)}&format=json&origin=*`;
     
@@ -239,11 +276,11 @@ async function getWikipediaCoords(cityName, region) {
     const pages = data.query.pages;
     const pageId = Object.keys(pages);
     
-    if (pages[pageId].coordinates) {
+    if (pages[pageId] && pages[pageId].coordinates) {
       return pages[pageId].coordinates;
     }
 
-    // Secondary deep fallback scan if specific naming indices map strictly to page headers
+    // Secondary shallow query loop backup
     const deepUrl = `https://wikipedia.org{encodeURIComponent(cityName)}&format=json&origin=*`;
     const deepResponse = await fetch(deepUrl, {
       method: "GET",
@@ -253,7 +290,7 @@ async function getWikipediaCoords(cityName, region) {
     const deepPages = deepData.query.pages;
     const deepPageId = Object.keys(deepPages);
 
-    return deepPages[deepPageId].coordinates ? deepPages[deepPageId].coordinates : null;
+    return deepPages[deepPageId] && deepPages[deepPageId].coordinates ? deepPages[deepPageId].coordinates : null;
   } catch (e) {
     return null;
   }
@@ -278,14 +315,12 @@ function generateAutomatedPalettes(coords, floraContainerId, soilContainerId) {
   document.getElementById(soilContainerId).innerHTML = soilPalette.map(color => `<div class="bar" style="background:${color}"></div>`).join('');
 }
 
-// --- INITIALISE STARTUP TRIGGERS ---
+// --- INITIALISE RUNNERS ---
 initializeDropdown();
 
-// Safe execution wrapper ensuring the baseline selection maps correctly on cold start load
-if (selector.value) {
+// Safe initialization step pulling cleanly from the primary dropdown input text context
+if (selector && selector.value) {
   processEcoregion(selector.value);
-} else if (ukCities.length > 0) {
-  processEcoregion(ukCities[0]);
 }
 
 selector.onchange = (e) => processEcoregion(e.target.value);
