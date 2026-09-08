@@ -265,7 +265,7 @@ async function getWikipediaCoords(cityName, region) {
     var suffix = (region === "UK") ? " United Kingdom" : " China";
     var strictQuery = prefix + `"` + cityName + `"` + suffix;
     
-    var searchUrl = "https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=" + 
+    var searchUrl = "https://en.wikipedia.org/w/api.php?action=query&generator=prefixsearch&gpssearch=" + 
                     encodeURIComponent(strictQuery) + 
                     "&gsrlimit=1&prop=coordinates&format=json&origin=*";
     
