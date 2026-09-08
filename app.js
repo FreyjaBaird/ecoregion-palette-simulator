@@ -264,20 +264,33 @@ async function getWikipediaCoords(cityName, region) {
     const fullSearchQuery = region === "UK" ? `${cityName} United Kingdom` : `${cityName} China`;
     const searchUrl = `https://wikipedia.org{encodeURIComponent(fullSearchQuery)}&format=json&origin=*`;
     
+    // Vocal Log: What is the code sending right now?
+    printLog(`📡 TRANSMITTING SEARCH TO WIKI: Querying string "${fullSearchQuery}"`, "info");
+    printLog(`🔗 URL SENT: ${searchUrl}`);
+
     const searchResponse = await fetch(searchUrl, {
       method: "GET",
       headers: { "Api-User-Agent": "EcoregionPaletteSimulator/1.0" }
     });
     
-    if (!searchResponse.ok) return null;
+    if (!searchResponse.ok) {
+      printLog(`❌ HTTP SERVER ERROR: Wikipedia returned a bad response status code: ${searchResponse.status}`, "error");
+      return null;
+    }
+    
     const searchData = await searchResponse.json();
     
-    if (!searchData.query?.search || searchData.query.search.length === 0) return null;
+    if (!searchData.query?.search || searchData.query.search.length === 0) {
+      printLog(`⚠️ WIKI SEARCH VACANT: Zero search results found for query: "${fullSearchQuery}"`, "error");
+      return null;
+    }
     
-    // FIX: Targeting the very first index item [0] inside the search array result
-    const matchedTitle = searchData.query.search[0].title;
+    const matchedTitle = searchData.query.search.title;
+    printLog(`✅ WIKI MATCH STRIKE: Search found page match: "${matchedTitle}"`, "success");
     
     const coordsUrl = `https://wikipedia.org{encodeURIComponent(matchedTitle)}&format=json&origin=*`;
+    printLog(`📡 TRANSMITTING COORD REQUEST: Querying dimensions for page: "${matchedTitle}"`, "info");
+
     const coordsResponse = await fetch(coordsUrl, {
       method: "GET",
       headers: { "Api-User-Agent": "EcoregionPaletteSimulator/1.0" }
@@ -287,8 +300,14 @@ async function getWikipediaCoords(cityName, region) {
     const pages = coordsData.query.pages;
     const pageId = Object.keys(pages);
     
-    return pages[pageId] && pages[pageId].coordinates ? pages[pageId].coordinates : null;
+    if (pages[pageId] && pages[pageId].coordinates) {
+      return pages[pageId].coordinates;
+    } else {
+      printLog(`⚠️ DIMENSIONS MISSING: Found page "${matchedTitle}" but it contains no geological coordinates in its Wikipedia metadata box.`, "error");
+      return null;
+    }
   } catch (e) {
+    printLog(`❌ BROWSER CAUGHT EXCEPTION: Network request completely snapped. Reason: ${e.message}`, "error");
     return null;
   }
 }
