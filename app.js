@@ -107,21 +107,19 @@ const chinaCities = [
 ];
 // --- DYNAMIC TERMINAL LOGGER & SAFE CONTROL MECHANICS ---
 
+
 const selector = document.getElementById('city-selector');
 const matchSelector = document.getElementById('match-selector');
 const terminal = document.getElementById('terminal-log');
 
-// Specialized custom logger function that writes text directly onto your screen!
 function printLog(message, type = 'normal') {
   if (!terminal) return;
   const entry = document.createElement('div');
-  entry.className = `log-entry log-${type}`;
-  
+  entry.className = "log-entry log-" + type;
   const timestamp = new Date().toLocaleTimeString();
-  entry.innerText = `[${timestamp}] ${message}`;
-  
+  entry.innerText = "[" + timestamp + "] " + message;
   terminal.appendChild(entry);
-  terminal.scrollTop = terminal.scrollHeight; // Auto-scrolls downwards to stay live
+  terminal.scrollTop = terminal.scrollHeight;
 }
 
 function initializeDropdown() {
@@ -154,108 +152,9 @@ function initializeDropdown() {
 function updateBoxStatus(id, text, isError = false) {
   const el = document.getElementById(id);
   if (isError) {
-    el.innerHTML = `<div style="padding:10px; color:#ef476f; font-size:0.75rem; text-align:center;">⚠️ ${text}</div>`;
+    el.innerHTML = '<div style="padding:10px; color:#ef476f; font-size:0.75rem; text-align:center;">⚠️ ' + text + '</div>';
   } else {
-    el.innerHTML = `<div style="padding:10px; color:var(--muted); font-size:0.75rem; text-align:center;">⏳ ${text}</div>`;
-  }
-}
-
-async function processEcoregion(cityName) {
-  if (!cityName || typeof cityName !== 'string') return;
-  
-  const selectedOption = selector.options[selector.selectedIndex];
-  const currentRegion = selectedOption ? selectedOption.dataset.region : "UK";
-
-  printLog(`Starting vector execution loop for city: "${cityName}" (${currentRegion})`, "info");
-  
-  updateBoxStatus('src-flora', `Searching ${cityName} flora...`);
-  updateBoxStatus('src-soil', `Analyzing ${cityName} stratum...`);
-  updateBoxStatus('match-flora', 'Computing vector...');
-  updateBoxStatus('match-soil', 'Computing vector...');
-  
-  matchSelector.innerHTML = `<option>📡 Calculating nearest vector...</option>`;
-
-  try {
-    // Step A: Fetch coordinates for source city
-    printLog(`Connecting to Wikipedia for geolocation data -> "${cityName}"...`);
-    const srcCoords = await getWikipediaCoords(cityName, currentRegion);
-    
-    if (!srcCoords) {
-      const errMsg = "Coordinate map missing";
-      updateBoxStatus('src-flora', errMsg, true);
-      updateBoxStatus('src-soil', errMsg, true);
-      matchSelector.innerHTML = `<option>⚠️ Location matrix offline</option>`;
-      printLog(`Wikipedia failed to provide a spatial match for "${cityName}". Connection refused or misspelled.`, "error");
-      throw new Error("Source location unmappable.");
-    }
-    
-    printLog(`Source locked successfully! Latitude: ${srcCoords.lat}, Longitude: ${srcCoords.lon}`, "success");
-
-    const isUK = currentRegion === "UK";
-    const opposingPool = isUK ? chinaCities : ukCities;
-    const opposingRegion = isUK ? "China" : "UK";
-
-    printLog(`Querying background coordinates for opposing pool (${opposingPool.length} candidate cities)...`, "info");
-
-    // Symmetrical, safety throttled sequence loop to prevent connection flooding
-    let resolvedCandidates = [];
-    let processedCount = 0;
-
-    for (let candidate of opposingPool) {
-      processedCount++;
-      if (processedCount % 10 === 0) {
-        printLog(`Background progress status: Checked ${processedCount}/${opposingPool.length} vectors...`);
-      }
-      
-      const coords = await getWikipediaCoords(candidate, opposingRegion);
-      resolvedCandidates.push({ name: candidate, coords });
-    }
-
-    printLog("Background pool coordinate resolution completed. Evaluating vectors...", "info");
-
-    let bestMatchCity = null;
-    let closestDistance = Infinity;
-    let bestMatchCoords = null;
-    let functionalMatches = 0;
-
-    // Step C: Run spatial vector calculation formulas
-    for (let item of resolvedCandidates) {
-      if (item.coords) {
-        functionalMatches++;
-        const distance = Math.sqrt(
-          Math.pow(srcCoords.lat - item.coords.lat, 2) + 
-          Math.pow(srcCoords.lon - item.coords.lon, 2)
-        );
-        
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          bestMatchCity = item.name;
-          bestMatchCoords = item.coords;
-        }
-      }
-    }
-
-    printLog(`Vector tracking completed. Successfully collected coordinate points for ${functionalMatches}/${opposingPool.length} candidates.`, "info");
-
-    if (!bestMatchCity) {
-      const failMsg = "Candidate loop failed";
-      updateBoxStatus('match-flora', failMsg, true);
-      updateBoxStatus('match-soil', failMsg, true);
-      matchSelector.innerHTML = `<option>⚠️ Vector calculation dropped</option>`;
-      printLog("Fatal: The engine could not assemble vectors because all background API calls failed.", "error");
-      throw new Error("Nearest-neighbor calculation failure.");
-    }
-
-    printLog(`Match calculated: "${bestMatchCity}" is your nearest ecological twin!`, "success");
-    matchSelector.innerHTML = `<option>Partner Match: ${bestMatchCity}, ${opposingRegion}</option>`;
-
-    // Step D: Successfully paint color grids onto panels
-    generateAutomatedPalettes(srcCoords, 'src-flora', 'src-soil');
-    generateAutomatedPalettes(bestMatchCoords, 'match-flora', 'match-soil');
-    printLog("Aesthetic color spectrum generated from coordinate matrices successfully.", "success");
-
-  } catch (err) {
-    printLog(`Loop broken: ${err.message}`, "error");
+    el.innerHTML = '<div style="padding:10px; color:var(--muted); font-size:0.75rem; text-align:center;">⏳ ' + text + '</div>';
   }
 }
 
@@ -304,14 +203,101 @@ async function getWikipediaCoords(cityName, region) {
 }
 
 
+// ==========================================
+// PART 3: VECTOR MATH, PALETTES & TEXT BUILDERS
+// ==========================================
+
+async function processEcoregion(cityName) {
+  if (!cityName || typeof cityName !== 'string') return;
+  
+  const selectedOption = selector.options[selector.selectedIndex];
+  const currentRegion = selectedOption ? selectedOption.dataset.region : "UK";
+
+  printLog("Starting vector execution loop for city: " + cityName + " (" + currentRegion + ")", "info");
+  
+  updateBoxStatus('src-flora', "Searching " + cityName + " flora...");
+  updateBoxStatus('src-soil', "Analyzing " + cityName + " stratum...");
+  updateBoxStatus('match-flora', 'Computing vector...');
+  updateBoxStatus('match-soil', 'Computing vector...');
+  
+  matchSelector.innerHTML = "<option>📡 Calculating nearest vector...</option>";
+
+  try {
+    const srcCoords = await getWikipediaCoords(cityName, currentRegion);
+    if (!srcCoords) {
+      const errMsg = "Coordinate map missing";
+      updateBoxStatus('src-flora', errMsg, true);
+      updateBoxStatus('src-soil', errMsg, true);
+      matchSelector.innerHTML = "<option>⚠️ Location matrix offline</option>";
+      throw new Error("Source location unmappable.");
+    }
+    
+    printLog("Source locked successfully! Latitude: " + srcCoords.lat + ", Longitude: " + srcCoords.lon, "success");
+
+    const isUK = currentRegion === "UK";
+    const opposingPool = isUK ? chinaCities : ukCities;
+    const opposingRegion = isUK ? "China" : "UK";
+
+    printLog("Querying background coordinates for opposing pool (" + opposingPool.length + " candidate cities)...", "info");
+
+    let resolvedCandidates = [];
+    for (let i = 0; i < opposingPool.length; i++) {
+      const candidate = opposingPool[i];
+      const coords = await getWikipediaCoords(candidate, opposingRegion);
+      resolvedCandidates.push({ name: candidate, coords: coords });
+    }
+
+    printLog("Background pool coordinate resolution completed. Evaluating vectors...", "info");
+
+    let bestMatchCity = null;
+    let closestDistance = Infinity;
+    let bestMatchCoords = null;
+    let functionalMatches = 0;
+
+    for (let j = 0; j < resolvedCandidates.length; j++) {
+      const item = resolvedCandidates[j];
+      if (item.coords) {
+        functionalMatches++;
+        const distance = Math.sqrt(
+          Math.pow(srcCoords.lat - item.coords.lat, 2) + 
+          Math.pow(srcCoords.lon - item.coords.lon, 2)
+        );
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          bestMatchCity = item.name;
+          bestMatchCoords = item.coords;
+        }
+      }
+    }
+
+    printLog("Vector tracking completed. Successfully collected data points for " + functionalMatches + "/" + opposingPool.length + " candidates.", "info");
+
+    if (!bestMatchCity) {
+      throw new Error("Nearest-neighbor calculation failure.");
+    }
+
+    printLog("Match calculated: " + bestMatchCity + " is your nearest ecological twin!", "success");
+    
+    matchSelector.innerHTML = "<option>Partner Match: " + bestMatchCity + ", " + opposingRegion + "</option>";
+
+    generateAutomatedPalettes(srcCoords, 'src-flora', 'src-soil');
+    generateAutomatedPalettes(bestMatchCoords, 'match-flora', 'match-soil');
+    
+    writeEcologicalTexts(srcCoords, bestMatchCoords, cityName, bestMatchCity, currentRegion, opposingRegion);
+
+  } catch (err) {
+    printLog("Loop broken: " + err.message, "error");
+  }
+}
+
 function generateAutomatedPalettes(coords, floraContainerId, soilContainerId) {
   const latitudeShift = Math.abs(coords.lat);
   const leafHue = Math.floor(100 + (latitudeShift * 1.5)) % 160; 
   
   const floraPalette = [
-    `hsl(${leafHue}, 45%, 20%)`,  
-    `hsl(${leafHue + 15}, 40%, 35%)`, 
-    `hsl(${leafHue - 10}, 50%, 55%)`  
+    "hsl(" + leafHue + ", 45%, 20%)",  
+    "hsl(" + (leafHue + 15) + ", 40%, 35%)", 
+    "hsl(" + (leafHue - 10) + ", 50%, 55%)"  
   ];
 
   const isTropicalZone = coords.lat < 32; 
@@ -319,16 +305,45 @@ function generateAutomatedPalettes(coords, floraContainerId, soilContainerId) {
     ? ["#5e2919", "#8c3d26", "#d46a43"] 
     : ["#3b312a", "#5c4c42", "#a69580"]; 
 
-  document.getElementById(floraContainerId).innerHTML = floraPalette.map(color => `<div class="bar" style="background:${color}"></div>`).join('');
-  document.getElementById(soilContainerId).innerHTML = soilPalette.map(color => `<div class="bar" style="background:${color}"></div>`).join('');
+  document.getElementById(floraContainerId).innerHTML = floraPalette.map(color => '<div class="bar" style="background:' + color + '"></div>').join('');
+  document.getElementById(soilContainerId).innerHTML = soilPalette.map(color => '<div class="bar" style="background:' + color + '"></div>').join('');
 }
 
-// --- INITIALISE RUNNERS ---
+function writeEcologicalTexts(srcCoords, matchCoords, srcName, matchName, srcReg, matchReg) {
+  function getFloraText(coords, region) {
+    const lat = Math.abs(coords.lat);
+    if (region === "UK") {
+      return lat > 55 
+        ? "Dominant Flora: <strong>Boreal Pinewood & Heathland</strong> (Scots Pine, Heather, Bilberry). Adapted to cold, damp growing boundaries."
+        : "Dominant Flora: <strong>Temperate Deciduous Oakwood</strong> (English Oak, European Beech, Bluebell). Flourishes in stable oceanic zones.";
+    } else {
+      return lat < 30
+        ? "Dominant Flora: <strong>Sub subtropical Broadleaf Evergreen Forest</strong> (Camellia, Castanopsis, native Bamboo). Thrives under monsoonal humidity."
+        : "Dominant Flora: <strong>Mixed Temperate Canopy</strong> (Korean Pine, East Asian Deciduous Oaks). Tolerates wide continental winter shifts.";
+    }
+  }
+
+  function getSoilText(coords) {
+    const lat = Math.abs(coords.lat);
+    return lat < 32 
+      ? "Soil Order: <strong>Ultisol (Vibrant Red Clay)</strong>. Deeply weathered earth enriched by iron and aluminum oxides due to prolonged thermal heat vectors."
+      : "Soil Order: <strong>Inceptisol / Podzol (Muted Silt Loam)</strong>. Rich organic humus layers sitting atop distinct ash-grey minerals leached by heavy precipitation pathways.";
+  }
+
+  document.getElementById('src-flora-text').innerHTML = getFloraText(srcCoords, srcReg);
+  document.getElementById('match-flora-text').innerHTML = getFloraText(matchCoords, matchReg);
+  document.getElementById('src-soil-text').innerHTML = getSoilText(srcCoords);
+  document.getElementById('match-soil-text').innerHTML = getSoilText(matchCoords);
+
+  printLog("Scientific justification matching " + srcName + " with " + matchName + " compiled.", "info");
+}
+
+// --- BOOT SEQUENCE RUNNERS ---
 initializeDropdown();
 
-// Safe initialization step pulling cleanly from the primary dropdown input text context
-if (selector && selector.value) {
-  processEcoregion(selector.value);
+if (selector && selector.value) { 
+  processEcoregion(selector.value); 
 }
 
 selector.onchange = (e) => processEcoregion(e.target.value);
+
