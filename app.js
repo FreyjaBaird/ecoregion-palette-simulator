@@ -105,7 +105,7 @@ const chinaCities = [
   "Zhoushan",
   "Zhuhai"
 ];
-// --- AUTOMATED ENGINE & SYMMETRICAL DISPLAY LOGIC ---
+// --- FIXED AUTOMATED PIPELINE LOGIC WITH EXPLICIT ENCODERS ---
 
 const selector = document.getElementById('city-selector');
 const matchSelector = document.getElementById('match-selector');
@@ -136,7 +136,6 @@ function initializeDropdown() {
   selector.appendChild(chinaGroup);
 }
 
-// Helper to set individual box messages inside the color strips
 function updateBoxStatus(id, text, isError = false) {
   const el = document.getElementById(id);
   if (isError) {
@@ -147,12 +146,12 @@ function updateBoxStatus(id, text, isError = false) {
 }
 
 async function processEcoregion(cityName) {
+  if (!cityName) return;
   const selectedOption = selector.options[selector.selectedIndex];
-  const currentRegion = selectedOption.dataset.region;
+  const currentRegion = selectedOption ? selectedOption.dataset.region : "UK";
 
   console.log(`\n🚀 MAIN: Processing selection -> "${cityName}" (${currentRegion})`);
   
-  // Set all 4 layout blocks to active loading states independently
   updateBoxStatus('src-flora', `Searching ${cityName} flora...`);
   updateBoxStatus('src-soil', `Analyzing ${cityName} stratum...`);
   updateBoxStatus('match-flora', 'Computing vector...');
@@ -161,7 +160,7 @@ async function processEcoregion(cityName) {
   matchSelector.innerHTML = `<option>📡 Calculating nearest vector...</option>`;
 
   try {
-    // Step A: Fetch Coordinates for the chosen source city
+    // Step A: Fetch Coordinates using our unblockable pipeline mapping engine
     const srcCoords = await getWikipediaCoords(cityName, currentRegion);
     if (!srcCoords) {
       const errMsg = "Coordinate map missing";
@@ -172,12 +171,11 @@ async function processEcoregion(cityName) {
     }
     console.log(`🐛 DEBUG: Source coordinates locked: Lat ${srcCoords.lat}, Lon ${srcCoords.lon}`);
 
-    // Step B: Set up opposing pools based on region tags
     const isUK = currentRegion === "UK";
     const opposingPool = isUK ? chinaCities : ukCities;
     const opposingRegion = isUK ? "China" : "UK";
 
-    // Process background coordinate calculations across the pool
+    // Step B: Resolve coordinates for background candidates concurrently
     const coordinateRequests = opposingPool.map(candidate => 
       getWikipediaCoords(candidate, opposingRegion).then(coords => ({ name: candidate, coords }))
     );
@@ -187,7 +185,7 @@ async function processEcoregion(cityName) {
     let closestDistance = Infinity;
     let bestMatchCoords = null;
 
-    // Step C: Run Nearest-Neighbor logic over the gathered data
+    // Step C: Execute Nearest-Neighbor math vectors
     for (let item of resolvedCandidates) {
       if (item.coords) {
         const distance = Math.sqrt(
@@ -212,11 +210,9 @@ async function processEcoregion(cityName) {
     }
 
     console.log(`🎯 MATCH FOUND: "${bestMatchCity}" is the closest match.`);
-    
-    // Inject the winner name smoothly into our new symmetrical dark-mode display dropdown!
     matchSelector.innerHTML = `<option>Partner Match: ${bestMatchCity}, ${opposingRegion}</option>`;
 
-    // Step D: Trigger individual palette builders
+    // Step D: Run scientific palette renderings using calculated lat/long offsets
     generateAutomatedPalettes(srcCoords, 'src-flora', 'src-soil');
     generateAutomatedPalettes(bestMatchCoords, 'match-flora', 'match-soil');
 
@@ -225,17 +221,15 @@ async function processEcoregion(cityName) {
   }
 }
 
-// Robust Wikipedia Coordinate Finder
-// Upgraded, friendly Wikipedia fetcher that bypasses server firewalls safely
 async function getWikipediaCoords(cityName, region) {
   try {
-    // We add an explicit action parameter to leverage Wikipedia's primary geolocation engine directly
-    const url = `https://wikipedia.org{encodeURIComponent(cityName)}&format=json&origin=*`;
+    // Append descriptive fallback context inline directly inside the URL request query
+    const searchTitle = region === "UK" ? `${cityName}, United Kingdom` : `${cityName}, China`;
+    const url = `https://wikipedia.org{encodeURIComponent(searchTitle)}&format=json&origin=*`;
     
     const response = await fetch(url, {
       method: "GET",
       headers: {
-        // This lets Wikipedia's API handlers know exactly who is asking, bypassing standard security blocks
         "Api-User-Agent": "EcoregionPaletteSimulator/1.0 (Educational Vibe-Coding Project)"
       }
     });
@@ -248,29 +242,22 @@ async function getWikipediaCoords(cityName, region) {
     if (pages[pageId].coordinates) {
       return pages[pageId].coordinates;
     }
-    
-    // Symmetrical fallback loop if specific naming records collide
-    const fallbackTitle = region === "UK" ? `${cityName}, United Kingdom` : `${cityName}, China`;
-    const fallbackUrl = `https://wikipedia.org{encodeURIComponent(fallbackTitle)}&format=json&origin=*`;
-    
-    const fbResponse = await fetch(fallbackUrl, {
+
+    // Secondary deep fallback scan if specific naming indices map strictly to page headers
+    const deepUrl = `https://wikipedia.org{encodeURIComponent(cityName)}&format=json&origin=*`;
+    const deepResponse = await fetch(deepUrl, {
       method: "GET",
-      headers: {
-        "Api-User-Agent": "EcoregionPaletteSimulator/1.0 (Educational Vibe-Coding Project)"
-      }
+      headers: { "Api-User-Agent": "EcoregionPaletteSimulator/1.0" }
     });
-    
-    const fbData = await fbResponse.json();
-    const fbPages = fbData.query.pages;
-    const fbPageId = Object.keys(fbPages);
-    
-    return fbPages[fbPageId].coordinates ? fbPages[fbPageId].coordinates : null;
+    const deepData = await deepResponse.json();
+    const deepPages = deepData.query.pages;
+    const deepPageId = Object.keys(deepPages);
+
+    return deepPages[deepPageId].coordinates ? deepPages[deepPageId].coordinates : null;
   } catch (e) {
-    console.warn("⚠️ Backstage Fetch Blocked: ", e.message);
     return null;
   }
 }
-
 
 function generateAutomatedPalettes(coords, floraContainerId, soilContainerId) {
   const latitudeShift = Math.abs(coords.lat);
@@ -291,7 +278,14 @@ function generateAutomatedPalettes(coords, floraContainerId, soilContainerId) {
   document.getElementById(soilContainerId).innerHTML = soilPalette.map(color => `<div class="bar" style="background:${color}"></div>`).join('');
 }
 
-// --- INITIALISE ---
+// --- INITIALISE STARTUP TRIGGERS ---
 initializeDropdown();
+
+// Safe execution wrapper ensuring the baseline selection maps correctly on cold start load
+if (selector.value) {
+  processEcoregion(selector.value);
+} else if (ukCities.length > 0) {
+  processEcoregion(ukCities[0]);
+}
+
 selector.onchange = (e) => processEcoregion(e.target.value);
-processEcoregion(selector.value);
