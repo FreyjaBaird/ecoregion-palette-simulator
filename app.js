@@ -259,42 +259,49 @@ async function processEcoregion(cityName) {
   }
 }
 
+// Bulletproof Search Generator API pipeline
 async function getWikipediaCoords(cityName, region) {
   try {
-    const searchTitle = region === "UK" ? `${cityName}, United Kingdom` : `${cityName}, China`;
-    const url = `https://wikipedia.org{encodeURIComponent(searchTitle)}&format=json&origin=*`;
+    // Append regional keywords to eliminate duplication across duplicate global towns
+    const fullSearchQuery = region === "UK" ? `${cityName} United Kingdom` : `${cityName} China`;
     
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Api-User-Agent": "EcoregionPaletteSimulator/1.0 (Educational Vibe-Coding Project)"
-      }
-    });
+    // We add "list=search" to use Wikipedia's search algorithm to find the right page first
+    const searchUrl = `https://wikipedia.org{encodeURIComponent(fullSearchQuery)}&format=json&origin=*`;
     
-    if (!response.ok) return null;
-    const data = await response.json();
-    const pages = data.query.pages;
-    const pageId = Object.keys(pages);
-    
-    if (pages[pageId] && pages[pageId].coordinates) {
-      return pages[pageId].coordinates;
-    }
-
-    // Secondary shallow query loop backup
-    const deepUrl = `https://wikipedia.org{encodeURIComponent(cityName)}&format=json&origin=*`;
-    const deepResponse = await fetch(deepUrl, {
+    const searchResponse = await fetch(searchUrl, {
       method: "GET",
       headers: { "Api-User-Agent": "EcoregionPaletteSimulator/1.0" }
     });
-    const deepData = await deepResponse.json();
-    const deepPages = deepData.query.pages;
-    const deepPageId = Object.keys(deepPages);
-
-    return deepPages[deepPageId] && deepPages[deepPageId].coordinates ? deepPages[deepPageId].coordinates : null;
+    
+    if (!searchResponse.ok) return null;
+    const searchData = await searchResponse.json();
+    
+    // If Wikipedia's search engine found a matching article page, grab the top result
+    if (!searchData.query?.search || searchData.query.search.length === 0) {
+      return null;
+    }
+    
+    const matchedTitle = searchData.query.search[0].title;
+    
+    // Now that we have the exact verified Page Title, fetch its rigid coordinate grid markers
+    const coordsUrl = `https://wikipedia.org{encodeURIComponent(matchedTitle)}&format=json&origin=*`;
+    
+    const coordsResponse = await fetch(coordsUrl, {
+      method: "GET",
+      headers: { "Api-User-Agent": "EcoregionPaletteSimulator/1.0" }
+    });
+    
+    const coordsData = await coordsResponse.json();
+    const pages = coordsData.query.pages;
+    const pageId = Object.keys(pages);
+    
+    return pages[pageId] && pages[pageId].coordinates ? pages[pageId].coordinates : null;
+    
   } catch (e) {
     return null;
   }
 }
+
 
 function generateAutomatedPalettes(coords, floraContainerId, soilContainerId) {
   const latitudeShift = Math.abs(coords.lat);
