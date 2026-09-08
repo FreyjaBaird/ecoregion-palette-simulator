@@ -105,13 +105,12 @@ const chinaCities = [
   "Zhoushan",
   "Zhuhai"
 ];
-// --- AUTOMATED SCIENTIFIC PIPELINE LOGIC ---
+// --- HIGHLY VOCAL AUTOMATED PIPELINE & VIBE-DEBUGGER ---
 
 const selector = document.getElementById('city-selector');
 
-// 1. Populates the HTML dropdown menu with both UK and China city names
 function initializeDropdown() {
-  // Create grouping headers for a professional visual layout
+  console.log("🐛 DEBUG: Initialising dropdown selectors...");
   const ukGroup = document.createElement('optgroup');
   ukGroup.label = "United Kingdom Ecoregions";
   ukCities.forEach(city => {
@@ -132,94 +131,120 @@ function initializeDropdown() {
 
   selector.appendChild(ukGroup);
   selector.appendChild(chinaGroup);
+  console.log("🐛 DEBUG: Dropdown fully populated.");
 }
 
-// 2. The core coordinate-lookup and matching loop
 async function processEcoregion(targetSelection) {
   const matchHeading = document.getElementById('match-title');
-  matchHeading.innerText = "Analyzing geographic vectors...";
+  console.log(`\n🚀 MAIN: Processing selection change -> "${targetSelection}"`);
+  matchHeading.innerText = `📡 Fetching coordinates for ${targetSelection.split(',')[0]}...`;
 
   try {
-    // Step A: Fetch Coordinates for the chosen source city from Wikipedia
+    // Step A: Fetch Coordinates for the chosen source city
     const srcCoords = await getWikipediaCoords(targetSelection);
-    if (!srcCoords) throw new Error("Location matrix offline");
+    if (!srcCoords) {
+      throw new Error(`Wikipedia has no coordinate matrix for "${targetSelection}". It may be spelled slightly differently on their main page.`);
+    }
+    console.log(`🐛 DEBUG: Source city coordinates locked: Lat ${srcCoords.lat}, Lon ${srcCoords.lon}`);
 
-    // Step B: Run the Nearest-Neighbor vector logic to find the closest match
-    // If user picks a UK city, we find the closest China city, and vice versa!
+    // Step B: Set up opposing pools
     const isUKSelection = targetSelection.endsWith(', UK');
     const opposingPool = isUKSelection ? chinaCities : ukCities;
     const opposingSuffix = isUKSelection ? ', China' : ', UK';
 
-    let bestMatchCity = opposingPool[0];
-    let closestDistance = Infinity;
+    matchHeading.innerText = `🧮 Gathering coordinates for all ${opposingPool.length} opposing cities simultaneously...`;
+    console.log(`🐛 DEBUG: Querying ${opposingPool.length} records in parallel to prevent browser freezing.`);
 
-    // We look up opposing coords to run the mathematical spatial distance formula
-    for (let candidate of opposingPool) {
-      const candidateFull = `${candidate}${opposingSuffix}`;
-      const candCoords = await getWikipediaCoords(candidateFull);
-      
-      if (candCoords) {
-        // Spatial Euclidean distance formula running live across vectors
+    // Optimization: Request ALL 50 coordinates at the exact same time in parallel
+    const coordinateRequests = opposingPool.map(candidate => 
+      getWikipediaCoords(`${candidate}${opposingSuffix}`).then(coords => ({ name: candidate, coords }))
+    );
+    const resolvedCandidates = await Promise.all(coordinateRequests);
+
+    matchHeading.innerText = "📐 Computing closest Euclidean vector distance...";
+    
+    let bestMatchCity = null;
+    let closestDistance = Infinity;
+    let successfulFetches = 0;
+
+    // Step C: Run the Nearest-Neighbor vector logic
+    for (let item of resolvedCandidates) {
+      if (item.coords) {
+        successfulFetches++;
         const distance = Math.sqrt(
-          Math.pow(srcCoords.lat - candCoords.lat, 2) + 
-          Math.pow(srcCoords.lon - candCoords.lon, 2)
+          Math.pow(srcCoords.lat - item.coords.lat, 2) + 
+          Math.pow(srcCoords.lon - item.coords.lon, 2)
         );
+        
         if (distance < closestDistance) {
           closestDistance = distance;
-          bestMatchCity = candidateFull;
+          bestMatchCity = `${item.name}${opposingSuffix}`;
         }
       }
     }
 
+    console.log(`🐛 DEBUG: Successfully calculated vectors for ${successfulFetches}/${opposingPool.length} opposing cities.`);
+
+    if (!bestMatchCity) {
+      throw new Error(`The algorithm failed because Wikipedia blocked all ${opposingPool.length} background candidate requests. Try reloading in a few seconds.`);
+    }
+
+    console.log(`🎯 MATCH FOUND: "${bestMatchCity}" is the closest ecological vector match.`);
     matchHeading.innerText = `Closest Vector Match: ${bestMatchCity.split(',')[0]}`;
 
-    // Step C: Construct the dynamic scientific palettes for both cities on the fly
+    // Step D: Construct the dynamic scientific palettes for both cities on the fly
     generateAutomatedPalettes(srcCoords, 'src-flora', 'src-soil');
     
-    const matchedCoords = await getWikipediaCoords(bestMatchCity);
-    if (matchedCoords) {
-      generateAutomatedPalettes(matchedCoords, 'match-flora', 'match-soil');
+    // Find the coordinates of the winner from our pre-fetched list
+    const winnerData = resolvedCandidates.find(x => `${x.name}${opposingSuffix}` === bestMatchCity);
+    if (winnerData && winnerData.coords) {
+      generateAutomatedPalettes(winnerData.coords, 'match-flora', 'match-soil');
     }
 
   } catch (err) {
-    matchHeading.innerText = `Error: ${err.message}`;
+    console.error("❌ CRITICAL ERROR CAPTURED:", err.message);
+    // Display the highly descriptive error message right inside the dashboard panel!
+    matchHeading.innerText = `⚠️ Fail: ${err.message}`;
+    
+    // Clear out palettes so old data doesn't sit lingering on screen during a failure
+    document.getElementById('src-flora').innerHTML = '';
+    document.getElementById('src-soil').innerHTML = '';
+    document.getElementById('match-flora').innerHTML = '';
+    document.getElementById('match-soil').innerHTML = '';
   }
 }
 
-// 3. Helper: Connects to Wikipedia API to extract exact Lat/Long
 async function getWikipediaCoords(cityName) {
   try {
     const url = `https://wikipedia.org{encodeURIComponent(cityName)}&format=json&origin=*`;
     const response = await fetch(url);
+    if (!response.ok) return null;
+    
     const data = await response.json();
     const pages = data.query.pages;
-    const pageId = Object.keys(pages)[0];
-    return pages[pageId].coordinates ? pages[pageId].coordinates[0] : null;
-  } catch {
+    const pageId = Object.keys(pages);
+    return pages[pageId].coordinates ? pages[pageId].coordinates : null;
+  } catch (e) {
+    console.warn(`⚠️ Warning: Failed fetch request for "${cityName}". Network throttled.`);
     return null;
   }
 }
 
-// 4. Helper: Uses coordinate grids to mathematically construct unweighted color bars
 function generateAutomatedPalettes(coords, floraContainerId, soilContainerId) {
-  // Generate a distinct flora hue mathematically using the latitude vector
-  // High latitudes (North) lean into deep, dark forest pines; low latitudes swing to bright subtropical greens
   const latitudeShift = Math.abs(coords.lat);
   const leafHue = Math.floor(100 + (latitudeShift * 1.5)) % 160; 
   
   const floraPalette = [
-    `hsl(${leafHue}, 45%, 20%)`,  // Dark canopy threshold
-    `hsl(${leafHue + 15}, 40%, 35%)`, // Mid-story vegetation leaf
-    `hsl(${leafHue - 10}, 50%, 55%)`  // Fresh ground undergrowth brush
+    `hsl(${leafHue}, 45%, 20%)`,  
+    `hsl(${leafHue + 15}, 40%, 35%)`, 
+    `hsl(${leafHue - 10}, 50%, 55%)`  
   ];
 
-  // Construct a soil layer matrix depending on geographic warmth vectors
   const isTropicalZone = coords.lat < 32; 
   const soilPalette = isTropicalZone 
-    ? ["#5e2919", "#8c3d26", "#d46a43"] // Vibrant Iron-oxidized Red Clay (Ultisols)
-    : ["#3b312a", "#5c4c42", "#a69580"]; // Leached Dark Organic Silt Loam (Inceptisols)
+    ? ["#5e2919", "#8c3d26", "#d46a43"] 
+    : ["#3b312a", "#5c4c42", "#a69580"]; 
 
-  // Inject the layout-stretching flex items directly into your CSS panels
   document.getElementById(floraContainerId).innerHTML = floraPalette.map(color => `<div class="bar" style="background:${color}"></div>`).join('');
   document.getElementById(soilContainerId).innerHTML = soilPalette.map(color => `<div class="bar" style="background:${color}"></div>`).join('');
 }
@@ -227,4 +252,5 @@ function generateAutomatedPalettes(coords, floraContainerId, soilContainerId) {
 // --- BOOT SEQUENCE ---
 initializeDropdown();
 selector.onchange = (e) => processEcoregion(e.target.value);
-processEcoregion(selector.value); // Trigger calculation for Aberdeen instantly on start
+processEcoregion(selector.value);
+
