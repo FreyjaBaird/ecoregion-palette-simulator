@@ -9,6 +9,48 @@
 <body>
 
   <div class="grid">
+    <!-- Primary Source Panel -->
+    <div class="panel">
+      <h2>Source Ecoregion</h2>
+      <p>Select a city profile</p>
+      <select id="city-selector"></select>
+      
+      <div class="label">Dynamic Native Flora</div>
+      <div id="src-flora" class="strip"></div>
+      
+      <div class="label">Automated Soil Horizon</div>
+      <div id="src-soil" class="strip"></div>
+    </div>
+
+    <!-- Symmetrical Algorithmic Match Panel -->
+    <div class="panel">
+      <h2>Algorithmic Match</h2>
+      <p>Closest visual vector</p>
+      <!-- Balanced, disabled placeholder dropdown -->
+      <select id="match-selector" disabled></select>
+      
+      <div class="label">Matched Native Flora</div>
+      <div id="match-flora" class="strip"></div>
+      
+      <div class="label">Matched Soil Horizon</div>
+      <div id="match-soil" class="strip"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ecoregion Chromatic Matcher</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="grid">
     <!-- Row 1: Headers & Controls -->
     <div class="panel">
       <h2>Source Ecoregion</h2>
