@@ -261,56 +261,50 @@ async function processEcoregion(cityName) {
 
 async function getWikipediaCoords(cityName, region) {
   try {
-    const fullSearchQuery = region === "UK" ? `${cityName} United Kingdom` : `${cityName} China`;
-    const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(fullSearchQuery)}&format=json&origin=*`;
+    var prefix = (region === "UK") ? "City of " : "";
+    var suffix = (region === "UK") ? " United Kingdom" : " China";
+    var strictQuery = prefix + cityName + suffix;
     
-    // Vocal Log: What is the code sending right now?
-    printLog(`📡 TRANSMITTING SEARCH TO WIKI: Querying string "${fullSearchQuery}"`, "info");
-    printLog(`🔗 URL SENT: ${searchUrl}`);
+    var searchUrl = "https://wikipedia.org" + 
+                    encodeURIComponent(strictQuery) + 
+                    "&gsrlimit=1&prop=coordinates&format=json&origin=*";
+    
+    printLog("Transmitting search query: " + strictQuery, "info");
 
-    const searchResponse = await fetch(searchUrl, {
+    var response = await fetch(searchUrl, {
       method: "GET",
       headers: { "Api-User-Agent": "EcoregionPaletteSimulator/1.0" }
     });
     
-    if (!searchResponse.ok) {
-      printLog(`❌ HTTP SERVER ERROR: Wikipedia returned a bad response status code: ${searchResponse.status}`, "error");
+    if (!response.ok) return null;
+    var data = await response.json();
+    
+    if (!data.query || !data.query.pages) {
+      printLog("Wiki Error: No pages found for " + strictQuery, "error");
       return null;
     }
     
-    const searchData = await searchResponse.json();
+    var pageIds = Object.keys(data.query.pages);
+    var firstPageId = pageIds[0];
+    var pageData = data.query.pages[firstPageId];
     
-    if (!searchData.query?.search || searchData.query.search.length === 0) {
-      printLog(`⚠️ WIKI SEARCH VACANT: Zero search results found for query: "${fullSearchQuery}"`, "error");
-      return null;
-    }
-    
-    const matchedTitle = searchData.query.search[0].title;
-    printLog(`✅ WIKI MATCH STRIKE: Search found page match: "${matchedTitle}"`, "success");
-    
-    const coordsUrl = `https://wikipedia.org{encodeURIComponent(matchedTitle)}&format=json&origin=*`;
-    printLog(`📡 TRANSMITTING COORD REQUEST: Querying dimensions for page: "${matchedTitle}"`, "info");
+    printLog("Target Found: " + pageData.title, "success");
 
-    const coordsResponse = await fetch(coordsUrl, {
-      method: "GET",
-      headers: { "Api-User-Agent": "EcoregionPaletteSimulator/1.0" }
-    });
-    
-    const coordsData = await coordsResponse.json();
-    const pages = coordsData.query.pages;
-    const pageId = Object.keys(pages);
-    
-    if (pages[pageId] && pages[pageId].coordinates) {
-      return pages[pageId].coordinates;
+    if (pageData.coordinates && pageData.coordinates[0]) {
+      return {
+        lat: pageData.coordinates[0].lat,
+        lon: pageData.coordinates[0].lon
+      };
     } else {
-      printLog(`⚠️ DIMENSIONS MISSING: Found page "${matchedTitle}" but it contains no geological coordinates in its Wikipedia metadata box.`, "error");
+      printLog("Data Error: " + pageData.title + " has no coordinate markers.", "error");
       return null;
     }
   } catch (e) {
-    printLog(`❌ BROWSER CAUGHT EXCEPTION: Network request completely snapped. Reason: ${e.message}`, "error");
+    printLog("Network Exception: Request snapped. Reason: " + e.message, "error");
     return null;
   }
 }
+
 
 function generateAutomatedPalettes(coords, floraContainerId, soilContainerId) {
   const latitudeShift = Math.abs(coords.lat);
