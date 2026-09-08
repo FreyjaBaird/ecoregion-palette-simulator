@@ -261,9 +261,7 @@ async function processEcoregion(cityName) {
 
 async function getWikipediaCoords(cityName, region) {
   try {
-    var prefix = (region === "UK") ? "" : "";
-    var suffix = (region === "UK") ? " United Kingdom" : " China";
-    var strictQuery = prefix + cityName + suffix;
+    var strictQuery = cityName;
     
     var searchUrl = "https://en.wikipedia.org/w/api.php?action=query&generator=prefixsearch&gpssearch=" + 
                     encodeURIComponent(strictQuery) + 
