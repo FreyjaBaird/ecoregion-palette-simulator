@@ -105,9 +105,10 @@ const chinaCities = [
   "Zhoushan",
   "Zhuhai"
 ];
-// --- HIGHLY VOCAL PIPELINE WITH SEPARATE BOX REPORTERS ---
+// --- AUTOMATED ENGINE & SYMMETRICAL DISPLAY LOGIC ---
 
 const selector = document.getElementById('city-selector');
+const matchSelector = document.getElementById('match-selector');
 
 function initializeDropdown() {
   console.log("🐛 DEBUG: Initialising dropdown selectors...");
@@ -115,8 +116,8 @@ function initializeDropdown() {
   ukGroup.label = "United Kingdom Ecoregions";
   ukCities.forEach(city => {
     let opt = document.createElement('option');
-    opt.value = city; // Store just the clean name
-    opt.dataset.region = "UK"; // Tag the region on a hidden attribute
+    opt.value = city;
+    opt.dataset.region = "UK";
     opt.textContent = city;
     ukGroup.appendChild(opt);
   });
@@ -125,8 +126,8 @@ function initializeDropdown() {
   chinaGroup.label = "China Ecoregions";
   chinaCities.forEach(city => {
     let opt = document.createElement('option');
-    opt.value = city; // Store just the clean name
-    opt.dataset.region = "China"; // Tag the region on a hidden attribute
+    opt.value = city;
+    opt.dataset.region = "China";
     opt.textContent = city;
     chinaGroup.appendChild(opt);
   });
@@ -135,7 +136,7 @@ function initializeDropdown() {
   selector.appendChild(chinaGroup);
 }
 
-// Helper to set individual box messages immediately
+// Helper to set individual box messages inside the color strips
 function updateBoxStatus(id, text, isError = false) {
   const el = document.getElementById(id);
   if (isError) {
@@ -146,27 +147,27 @@ function updateBoxStatus(id, text, isError = false) {
 }
 
 async function processEcoregion(cityName) {
-  const matchHeading = document.getElementById('match-title');
   const selectedOption = selector.options[selector.selectedIndex];
   const currentRegion = selectedOption.dataset.region;
 
   console.log(`\n🚀 MAIN: Processing selection -> "${cityName}" (${currentRegion})`);
   
   // Set all 4 layout blocks to active loading states independently
-  updateBoxStatus('src-flora', `Searching ${cityName} flora indices...`);
-  updateBoxStatus('src-soil', `Analyzing ${cityName} geological stratum...`);
-  updateBoxStatus('match-flora', 'Awaiting algorithm calculation...');
-  updateBoxStatus('match-soil', 'Awaiting algorithm calculation...');
+  updateBoxStatus('src-flora', `Searching ${cityName} flora...`);
+  updateBoxStatus('src-soil', `Analyzing ${cityName} stratum...`);
+  updateBoxStatus('match-flora', 'Computing vector...');
+  updateBoxStatus('match-soil', 'Computing vector...');
   
-  matchHeading.innerText = `📡 Mapping coordinates for ${cityName}...`;
+  matchSelector.innerHTML = `<option>📡 Calculating nearest vector...</option>`;
 
   try {
     // Step A: Fetch Coordinates for the chosen source city
     const srcCoords = await getWikipediaCoords(cityName, currentRegion);
     if (!srcCoords) {
-      const errMsg = "Wikipedia coordinate map missing";
+      const errMsg = "Coordinate map missing";
       updateBoxStatus('src-flora', errMsg, true);
       updateBoxStatus('src-soil', errMsg, true);
+      matchSelector.innerHTML = `<option>⚠️ Location matrix offline</option>`;
       throw new Error(`Could not find coordinate data for "${cityName}"`);
     }
     console.log(`🐛 DEBUG: Source coordinates locked: Lat ${srcCoords.lat}, Lon ${srcCoords.lon}`);
@@ -176,9 +177,7 @@ async function processEcoregion(cityName) {
     const opposingPool = isUK ? chinaCities : ukCities;
     const opposingRegion = isUK ? "China" : "UK";
 
-    matchHeading.innerText = `🧮 Calculating distance vectors across ${opposingPool.length} ecoregions...`;
-
-    // Process background coordinate calculations
+    // Process background coordinate calculations across the pool
     const coordinateRequests = opposingPool.map(candidate => 
       getWikipediaCoords(candidate, opposingRegion).then(coords => ({ name: candidate, coords }))
     );
@@ -205,29 +204,30 @@ async function processEcoregion(cityName) {
     }
 
     if (!bestMatchCity) {
-      const failMsg = "Background candidate loop failed";
+      const failMsg = "Candidate loop failed";
       updateBoxStatus('match-flora', failMsg, true);
       updateBoxStatus('match-soil', failMsg, true);
+      matchSelector.innerHTML = `<option>⚠️ Vector calculation dropped</option>`;
       throw new Error("Could not compute nearest-neighbor match.");
     }
 
     console.log(`🎯 MATCH FOUND: "${bestMatchCity}" is the closest match.`);
-    matchHeading.innerText = `Closest Vector Match: ${bestMatchCity}, ${opposingRegion}`;
+    
+    // Inject the winner name smoothly into our new symmetrical dark-mode display dropdown!
+    matchSelector.innerHTML = `<option>Partner Match: ${bestMatchCity}, ${opposingRegion}</option>`;
 
-    // Step D: Successfully trigger individual palette builders
+    // Step D: Trigger individual palette builders
     generateAutomatedPalettes(srcCoords, 'src-flora', 'src-soil');
     generateAutomatedPalettes(bestMatchCoords, 'match-flora', 'match-soil');
 
   } catch (err) {
     console.error("❌ MAIN CRITICAL EXCEPTION:", err.message);
-    matchHeading.innerText = `⚠️ Fail: ${err.message}`;
   }
 }
 
-// Improved Wikipedia Coordinate Finder (Bypasses exact string blocks)
+// Robust Wikipedia Coordinate Finder
 async function getWikipediaCoords(cityName, region) {
   try {
-    // We pass just the clean city name to Wikipedia's search array to maximize hits
     const url = `https://wikipedia.org{encodeURIComponent(cityName)}&format=json&origin=*`;
     const response = await fetch(url);
     if (!response.ok) return null;
@@ -236,12 +236,11 @@ async function getWikipediaCoords(cityName, region) {
     const pages = data.query.pages;
     const pageId = Object.keys(pages);
     
-    // If found, send it back immediately!
     if (pages[pageId].coordinates) {
       return pages[pageId].coordinates;
     }
     
-    // Fallback: If Wikipedia is picky, append country details to assist search context
+    // Backup search query structure if first pass comes up blank
     const fallbackTitle = region === "UK" ? `${cityName}, United Kingdom` : `${cityName}, China`;
     const fallbackUrl = `https://wikipedia.org{encodeURIComponent(fallbackTitle)}&format=json&origin=*`;
     const fbResponse = await fetch(fallbackUrl);
