@@ -39,6 +39,10 @@ body {
   border-radius: 16px;
 }
 
+.full-width {
+  grid-column: 1 / -1;
+}
+
 h2 { margin: 0 0 4px 0; font-size: 1.1rem; }
 p { margin: 0 0 16px 0; color: var(--muted); font-size: 0.8rem; }
 
@@ -55,7 +59,6 @@ select {
   box-sizing: border-box;
 }
 
-/* Styled specifically to look like a premium greyed-out display box */
 select:disabled {
   background: #182026;
   color: var(--accent);
@@ -90,3 +93,22 @@ select:disabled {
   flex: 1; 
   height: 100%;
 }
+
+/* Beautiful scrolling dev terminal styling box */
+#terminal-log {
+  background: #050709;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  height: 180px;
+  overflow-y: auto;
+  font-family: monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #a3b899;
+}
+
+.log-entry { margin-bottom: 4px; }
+.log-success { color: var(--accent); }
+.log-error { color: #ef476f; }
+.log-info { color: #00b4d8; }
