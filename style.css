@@ -82,7 +82,7 @@ select:disabled {
   height: 80px;
   border-radius: 8px;
   overflow: hidden;
-  margin-bottom: 16px;
+  margin-bottom: 6px; /* Reduced gap to bring details text closer */
   border: 1px solid rgba(255,255,255,0.05);
   background: var(--bg);
   align-items: center;
@@ -94,13 +94,25 @@ select:disabled {
   height: 100%;
 }
 
-/* Beautiful scrolling dev terminal styling box */
+/* Elegant, clean scientific details layout block */
+.scientific-desc {
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-bottom: 20px;
+  padding: 4px 2px;
+}
+
+.scientific-desc strong {
+  color: var(--text);
+}
+
 #terminal-log {
   background: #050709;
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 14px;
-  height: 180px;
+  height: 140px;
   overflow-y: auto;
   font-family: monospace;
   font-size: 0.75rem;
