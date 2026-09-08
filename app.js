@@ -259,7 +259,6 @@ async function processEcoregion(cityName) {
   }
 }
 
-// The perfectly indexed, unblockable search pipeline
 async function getWikipediaCoords(cityName, region) {
   try {
     const fullSearchQuery = region === "UK" ? `${cityName} United Kingdom` : `${cityName} China`;
@@ -273,8 +272,9 @@ async function getWikipediaCoords(cityName, region) {
     if (!searchResponse.ok) return null;
     const searchData = await searchResponse.json();
     
-    // FIX LOCK: Added [0] so it targets the first row of the search array cleanly
     if (!searchData.query?.search || searchData.query.search.length === 0) return null;
+    
+    // FIX: Targeting the very first index item [0] inside the search array result
     const matchedTitle = searchData.query.search[0].title;
     
     const coordsUrl = `https://wikipedia.org{encodeURIComponent(matchedTitle)}&format=json&origin=*`;
@@ -292,8 +292,6 @@ async function getWikipediaCoords(cityName, region) {
     return null;
   }
 }
-
-
 
 function generateAutomatedPalettes(coords, floraContainerId, soilContainerId) {
   const latitudeShift = Math.abs(coords.lat);
