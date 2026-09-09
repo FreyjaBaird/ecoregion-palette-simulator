@@ -221,6 +221,7 @@ async function processEcoregion(cityName) {
   updateBoxStatus('match-soil', 'Computing vector...');
   
   matchSelector.innerHTML = "<option>📡 Calculating nearest vector...</option>";
+  document.getElementById('match-justification-text').innerHTML = "Computing vector variance matrices...";
 
   try {
     const srcCoords = await getWikipediaCoords(cityName, currentRegion);
@@ -229,6 +230,7 @@ async function processEcoregion(cityName) {
       updateBoxStatus('src-flora', errMsg, true);
       updateBoxStatus('src-soil', errMsg, true);
       matchSelector.innerHTML = "<option>⚠️ Location matrix offline</option>";
+      document.getElementById('match-justification-text').innerHTML = "Calculation failed.";
       throw new Error("Source location unmappable.");
     }
     
@@ -335,17 +337,17 @@ function writeEcologicalTexts(srcCoords, matchCoords, srcName, matchName, srcReg
   document.getElementById('src-soil-text').innerHTML = getSoilText(srcCoords);
   document.getElementById('match-soil-text').innerHTML = getSoilText(matchCoords);
 
-  // === SAFE EX ZONE: Math lines run flawlessly right down here! ===
+  // SAFE CALCULATION ROW: Executing outside of inner scoping functions safely
   const latDiff = Math.abs(srcCoords.lat - matchCoords.lat).toFixed(2);
   const lonDiff = Math.abs(srcCoords.lon - matchCoords.lon).toFixed(2);
   
   document.getElementById('match-justification-text').innerHTML = 
-    "Vector variance delta: <strong>Δ" + latDiff + "° Lat</strong> / <strong>Δ" + lonDiff + "° Lon</strong>. This candidate yields the absolute lowest spatial Euclidean distance threshold within your opposing ecoregion data pool.";
+    "Variance: Δ" + latDiff + "° Lat / Δ" + lonDiff + "° Lon. Lowest geometric Euclidean threshold across data pool.";
 
   printLog("Scientific justification matching " + srcName + " with " + matchName + " compiled.", "info");
 }
 
-// --- BOOT SEQUENCE RUNNERS ---
+// --- INITIALISE RUNNERS ---
 initializeDropdown();
 
 if (selector && selector.value) { 
