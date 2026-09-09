@@ -39,13 +39,11 @@ body {
   border-radius: 16px;
 }
 
-/* Creates a coordinate baseline boundary for top-right absolute children formatting hooks */
-.relative-panel {
-  position: relative;
-}
-
-#match-header-container {
-  position: relative;
+/* Forces titles and justifications to share a row, pushing the text to opposite sides */
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   width: 100%;
 }
 
@@ -116,17 +114,14 @@ select:disabled {
   color: var(--text);
 }
 
-/* Floating top-right dashboard metric tracking configuration layout block */
+/* Beautiful right-aligned layout element block next to headers */
 #match-justification-text {
-  position: absolute;
-  top: 0;
-  right: 0;
   font-size: 0.65rem;
-  max-width: 160px;
+  max-width: 180px;
   text-align: right;
   color: var(--muted);
   line-height: 1.3;
-  padding: 2px;
+  padding-top: 4px;
 }
 
 #terminal-log {
