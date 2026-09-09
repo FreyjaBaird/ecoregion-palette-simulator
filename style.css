@@ -39,6 +39,16 @@ body {
   border-radius: 16px;
 }
 
+/* Creates a coordinate baseline boundary for top-right absolute children formatting hooks */
+.relative-panel {
+  position: relative;
+}
+
+#match-header-container {
+  position: relative;
+  width: 100%;
+}
+
 .full-width {
   grid-column: 1 / -1;
 }
@@ -82,7 +92,7 @@ select:disabled {
   height: 80px;
   border-radius: 8px;
   overflow: hidden;
-  margin-bottom: 6px; /* Reduced gap to bring details text closer */
+  margin-bottom: 6px;
   border: 1px solid rgba(255,255,255,0.05);
   background: var(--bg);
   align-items: center;
@@ -94,7 +104,6 @@ select:disabled {
   height: 100%;
 }
 
-/* Elegant, clean scientific details layout block */
 .scientific-desc {
   font-size: 0.75rem;
   color: var(--muted);
@@ -105,6 +114,19 @@ select:disabled {
 
 .scientific-desc strong {
   color: var(--text);
+}
+
+/* Floating top-right dashboard metric tracking configuration layout block */
+#match-justification-text {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 0.65rem;
+  max-width: 160px;
+  text-align: right;
+  color: var(--muted);
+  line-height: 1.3;
+  padding: 2px;
 }
 
 #terminal-log {
