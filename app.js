@@ -297,6 +297,29 @@ for (let i = 0; i < opposingPool.length; i += batchSize) {
       }
     }
 
+    console.log(resolvedCandidates);
+
+    printLog(
+  "Coordinate successes: " +
+  resolvedCandidates.filter(c => c.coords).length,
+  "info"
+);
+
+printLog(
+  "Climate successes: " +
+  resolvedCandidates.filter(c => c.climate.success).length,
+  "info"
+);
+
+printLog(
+  "Valid candidates: " +
+  resolvedCandidates.filter(
+    c => c.coords && c.climate.success
+  ).length,
+  "info"
+);
+
+      
     if (!bestMatchCity) throw new Error("Ecological vector intersection returned vacant matrix.");
 
     printLog("ECOSYSTEM SNAP: " + bestMatchCity + " identified as closest 4D climate twin!", "success");
