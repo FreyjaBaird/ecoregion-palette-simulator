@@ -240,7 +240,7 @@ async function processEcoregion(cityName) {
     printLog("Commencing concurrent 4D vector scans across " + opposingPool.length + " candidate ecoregions...", "info");
     
 let resolvedCandidates = [];
-const batchSize = 5;
+const batchSize = 15;
 
 for (let i = 0; i < opposingPool.length; i += batchSize) {
 
