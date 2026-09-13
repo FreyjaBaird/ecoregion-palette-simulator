@@ -459,17 +459,7 @@ console.log(
   "Annual temperature:",
   annualTemp
 );
-
-} catch (e) {
- 
-console.error(
-"Wikipedia test failed:",
-e
-);
- 
-}
-}
-    
+        
 const rainMatches = [
   ...wikiText.matchAll(
     /\|\s*[A-Za-z]{3}\s+rain mm\s*=\s*([\d.-]+)/gi
@@ -480,6 +470,17 @@ console.log(
   "Rain matches:",
   rainMatches
 );
+
+} catch (e) {
+ 
+console.error(
+"Wikipedia test failed:",
+e
+);
+ 
+}
+}
+
   
   
 function generateAutomatedPalettes(coords, floraContainerId, soilContainerId) {
