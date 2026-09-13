@@ -238,23 +238,40 @@ async function processEcoregion(cityName) {
     const opposingRegion = isUK ? "China" : "UK";
 
     printLog("Commencing concurrent 4D vector scans across " + opposingPool.length + " candidate ecoregions...", "info");
+    
+let resolvedCandidates = [];
+const batchSize = 5;
 
-    let resolvedCandidates = [];
-    for (let i = 0; i < opposingPool.length; i++) {
-      const candidate = opposingPool[i];
-      
-      // We gather coordinates AND scrape climate data row metrics simultaneously for the whole pool!
+for (let i = 0; i < opposingPool.length; i += batchSize) {
+
+  const batch = opposingPool.slice(i, i + batchSize);
+
+  const batchResults = await Promise.all(
+    batch.map(async (candidate) => {
+
       const [coords, climate] = await Promise.all([
         getWikipediaCoords(candidate, opposingRegion),
         fetchClimateMetrics(candidate, opposingRegion)
       ]);
-      
-      resolvedCandidates.push({ name: candidate, coords: coords, climate: climate });
-      
-      if ((i + 1) % 10 === 0) {
-        printLog("Matrix Progress: Computed " + (i + 1) + "/" + opposingPool.length + " climate space intersections...");
-      }
-    }
+
+      return {
+        name: candidate,
+        coords: coords,
+        climate: climate
+      };
+    })
+  );
+
+  resolvedCandidates.push(...batchResults);
+
+  printLog(
+    "Matrix Progress: Computed " +
+    Math.min(i + batchSize, opposingPool.length) +
+    "/" +
+    opposingPool.length +
+    " climate space intersections..."
+  );
+}
 
     // 3. MULTIDIMENSIONAL NEAREST-NEIGHBOR VECTOR CALCULATION
     let bestMatchCity = null;
