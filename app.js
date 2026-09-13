@@ -346,11 +346,14 @@ printLog(
 async function fetchClimateMetrics(cityName, region) {
   try {
     const lookupTitle = region === "UK" ? cityName : cityName;
-    const proxyUrl = "https://wt2j.vercel.app/api/en/" + encodeURIComponent(lookupTitle);
+    const wikiUrl =
+ "https://en.wikipedia.org/w/api.php?action=query&titles=" +
+  encodeURIComponent(lookupTitle) +
+  "&prop=revisions&rvprop=content&format=json&origin=*";
 
-    console.log("Climate URL:", proxyUrl);
+    console.log("Climate URL:", wikiUrl);
     
-    const response = await fetch(proxyUrl);
+    const response = await fetch(wikiUrl);
     
     console.log(
   "Climate response:",
@@ -361,42 +364,47 @@ async function fetchClimateMetrics(cityName, region) {
     if (!response.ok) return { success: false, temp: 10, rain: 700 }; // Fallback metrics if page is blank
     
     const data = await response.json();
+
+const pages = data.query.pages;
+const pageId = Object.keys(pages)[0];
+
+const wikiText =
+  pages[pageId].revisions[0]["*"];
+
+const tempMatches = [
+  ...wikiText.matchAll(
+    /\|\s*[A-Za-z]{3}\s+mean C\s*=\s*([\d.-]+)/g
+  )
+];
+
+const tempValues =
+  tempMatches
+    .slice(0, 12)
+    .map(m => parseFloat(m[1]));
+
+const annualTemp =
+  tempValues.reduce(
+    (sum, temp) => sum + temp,
+    0
+  ) / tempValues.length;
+
+const rainMatches = [
+  ...wikiText.matchAll(
+    /\|\s*[A-Za-z]{3}\s+precipitation mm\s*=\s*([\d.-]+)/gi
+  )
+];
+
+const rainV*lues =
+  rainMatches
+    .slice(0,*12)
+    .map(m => parseFloat(m[1])*;
+
+const annualRain =
+  rainValues*reduce(
+    (sum, rain) => sum + r*in,
+    0
+  );
     
-    let annualTemp = null;
-    let annualRain = null;
-
-    // Scan through all captured tables on the Wikipedia entry looking for weather records
-    if (data && data.tables) {
-      for (let t = 0; t < data.tables.length; t++) {
-        const rows = data.tables[t];
-        for (let r = 0; r < rows.length; r++) {
-          const firstCell = String(rows[r][0]).toLowerCase();
-          
-          // Look for historical row targets containing annualized calculation columns
-          if (firstCell.includes("average") || firstCell.includes("mean") || firstCell.includes("precipitation") || firstCell.includes("temp")) {
-            for (let c = 0; c < rows[r].length; c++) {
-              let cellVal = String(rows[r][c]);
-              // Look for the "Year" column data properties
-              if (String(rows[0][c]).toLowerCase().includes("year") || c === rows[r].length - 1) {
-                let cleanNum = parseFloat(cellVal.replace(/[^\d.-]/g, ''));
-                if (!isNaN(cleanNum)) {
-                  if (firstCell.includes("rain") || firstCell.includes("precip")) {
-                    annualRain = cleanNum;
-                  } else if (firstCell.includes("daily") || firstCell.includes("max") || firstCell.includes("mean")) {
-                    annualTemp = cleanNum;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // Dynamic environmental baselines if Wikipedia's chart syntax is custom
-    if (!annualTemp) annualTemp = region === "UK" ? 9.5 : 15.2;
-    if (!annualRain) annualRain = region === "UK" ? 750 : 920;
-
     return { success: true, temp: annualTemp, rain: annualRain };
   } catch (e) {
     return { success: false, temp: 10, rain: 750 };
