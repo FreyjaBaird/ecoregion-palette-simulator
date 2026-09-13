@@ -460,6 +460,16 @@ console.log(
   annualTemp
 );
 
+} catch (e) {
+ 
+console.error(
+"Wikipedia test failed:",
+e
+);
+ 
+}
+}
+    
 const rainMatches = [
   ...wikiText.matchAll(
     /\|\s*[A-Za-z]{3}\s+rain mm\s*=\s*([\d.-]+)/gi
@@ -471,7 +481,6 @@ console.log(
   rainMatches
 );
   
-}
   
 function generateAutomatedPalettes(coords, floraContainerId, soilContainerId) {
   const latitudeShift = Math.abs(coords.lat);
