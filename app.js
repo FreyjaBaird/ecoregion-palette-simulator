@@ -494,6 +494,8 @@ function writeEcologicalTexts(srcCoords, matchCoords, srcName, matchName, srcReg
 // --- INITIALISE RUNNERS ---
 initializeDropdown();
 
+testWikipediaClimate("Aberdeen");
+
 if (selector && selector.value) { 
   processEcoregion(selector.value); 
 }
