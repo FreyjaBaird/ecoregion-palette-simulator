@@ -435,11 +435,6 @@ const pageId = Object.keys(pages)[0];
 
     console.log("HELLO FROM TEMP TEST");
 
-);
-
-    const tempValues =
-  tempMatches.map(m => parseFloat(m[1]));
-
 console.log(
   "Temp values:",
   tempValues
@@ -462,9 +457,13 @@ console.log(
   )
 ];
 
+const tempValues =
+  tempMatches.map(m => parseFloat(m[1]));
+    
       console.log(
   "Temperature count:",
   tempMatches.length
+);
     
 console.log(
   "Temperature matches:",
