@@ -403,6 +403,38 @@ async function fetchClimateMetrics(cityName, region) {
   }
 }
 
+async function testWikipediaClimate(cityName) {
+
+  const url =
+    "https://en.wikipedia.org/w/api.php?action=query&titles=" +
+    encodeURIComponent(cityName) +
+    "&prop=revisions&rvprop=content&format=json&origin=*";
+
+  console.log("Testing URL:", url);
+
+  try {
+
+    const response = await fetch(url);
+
+    console.log(
+      "Wikipedia status:",
+      response.status,
+      response.ok
+    );
+
+    const data = await response.json();
+
+    console.log("Wikipedia data:", data);
+
+  } catch (e) {
+
+    console.error(
+      "Wikipedia test failed:",
+      e
+    );
+
+  }
+}
 
 function generateAutomatedPalettes(coords, floraContainerId, soilContainerId) {
   const latitudeShift = Math.abs(coords.lat);
