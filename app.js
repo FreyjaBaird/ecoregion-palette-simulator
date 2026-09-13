@@ -187,7 +187,26 @@ async function getWikipediaCoords(cityName, region) {
     
     printLog("Target Found: " + pageData.title, "success");
 
-    if (pageData.coordinates && pageData.coordinates[0]) {
+    console.log(
+  JSON.stringify(pageData, null, 2)
+);
+
+console.log(
+  "Coordinate page object:",
+  pageData
+);
+
+console.log(
+  "Coordinate page title:",
+  pageData.title
+);
+
+console.log(
+  "Coordinate property:",
+  pageData.coordinates
+);
+
+if (pageData.coordinates && pageData.coordinates[0]) {
       return {
         lat: pageData.coordinates[0].lat,
         lon: pageData.coordinates[0].lon
