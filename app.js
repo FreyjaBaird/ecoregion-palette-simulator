@@ -1,7 +1,7 @@
 // Clean text arrays for automated scientific matching and data-fetching
 const ukCities = [
   "Aberdeen",
-  "Bath",
+  "Bath, Somerset",
   "Belfast",
   "Birmingham",
   "Brighton",
@@ -162,10 +162,9 @@ async function getWikipediaCoords(cityName, region) {
   try {
     var strictQuery = cityName;
     
-    var searchUrl =
-      "https://en.wikipedia.org/w/api.php?action=query&titles=" +
-      encodeURIComponent(strictQuery) +
-      "&prop=coordinates&format=json&origin=*";
+    var searchUrl = "https://en.wikipedia.org/w/api.php?action=query&generator=prefixsearch&gpssearch=" + 
+                    encodeURIComponent(strictQuery) + 
+                    "&gpslimit=1&prop=coordinates&format=json&origin=*";
     
     printLog("Transmitting search query: " + strictQuery, "info");
 
@@ -183,16 +182,8 @@ async function getWikipediaCoords(cityName, region) {
     }
     
     var pageIds = Object.keys(data.query.pages);
-
-    if(pageIds.length === 0) {
-      printLog(
-      "Wiki Error: No pages found or " + strictQuery,
-      "error"
-    ;
-    return null;
-}
-
-var pageData =  data.query.pages[pageIds[0]];
+    var firstPageId = pageIds[0];
+    var pageData = data.query.pages[firstPageId];
     
     printLog("Target Found: " + pageData.title, "success");
 
@@ -229,7 +220,6 @@ if (pageData.coordinates && pageData.coordinates[0]) {
     return null;
   }
 }
-
 
 // ==========================================
 // PART 3: VECTOR MATH, PALETTES & TEXT BUILDERS
