@@ -347,8 +347,17 @@ async function fetchClimateMetrics(cityName, region) {
   try {
     const lookupTitle = region === "UK" ? cityName : cityName;
     const proxyUrl = "https://vercel.app" + encodeURIComponent(lookupTitle);
+
+    console.log("Climate URL:", proxyUrl);
     
     const response = await fetch(proxyUrl);
+    
+    console.log(
+  "Climate response:",
+  cityName,
+  response.status,
+  response.ok
+)
     if (!response.ok) return { success: false, temp: 10, rain: 700 }; // Fallback metrics if page is blank
     
     const data = await response.json();
