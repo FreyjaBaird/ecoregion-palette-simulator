@@ -421,7 +421,7 @@ async function testWikipediaClimate(cityName) {
       response.status,
       response.ok
     );
-
+  
     const data = await response.json();
 
     const pages = data.query.pages;
@@ -470,7 +470,9 @@ console.log(
   "Rain matches:",
   rainMatches
 );
-
+  
+}
+  
 function generateAutomatedPalettes(coords, floraContainerId, soilContainerId) {
   const latitudeShift = Math.abs(coords.lat);
   const leafHue = Math.floor(100 + (latitudeShift * 1.5)) % 160; 
