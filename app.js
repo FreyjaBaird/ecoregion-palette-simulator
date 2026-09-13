@@ -424,7 +424,23 @@ async function testWikipediaClimate(cityName) {
 
     const data = await response.json();
 
-    console.log("Wikipedia data:", data);
+    const pages = data.query.pages;
+
+console.log("Pages object:", pages);
+
+const pageId = Object.keys(pages)[0];
+
+console.log("Page ID:", pageId);
+
+console.log(
+  "Page data:",
+  pages[pageId]
+);
+
+    console.log(
+  "Wikipedia data:",
+  JSON.stringify(data, null, 2)
+);
 
   } catch (e) {
 
