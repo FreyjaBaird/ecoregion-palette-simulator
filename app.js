@@ -346,7 +346,7 @@ printLog(
 async function fetchClimateMetrics(cityName, region) {
   try {
     const lookupTitle = region === "UK" ? cityName : cityName;
-    const proxyUrl = "https://vercel.app" + encodeURIComponent(lookupTitle);
+    const proxyUrl = "https://wt2j.vercel.app/api/en/" + encodeURIComponent(lookupTitle);
 
     console.log("Climate URL:", proxyUrl);
     
