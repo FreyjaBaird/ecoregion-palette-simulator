@@ -434,13 +434,6 @@ const pageId = Object.keys(pages)[0];
   pages[pageId].revisions[0]["*"];
 
     console.log("HELLO FROM TEMP TEST");
-);
-
-
-console.log(
-  "Annual temperature:",
-  annualTemp
-);
 
     const tempMatches = [
   ...wikiText.matchAll(
@@ -462,10 +455,16 @@ const tempValues =
     0
   ) / tempValues.length;
 
+    
+console.log(
+  "Annual temperature:",
+  annualTemp
+);
 
   console.log(
     "Temp values:",
     tempValues
+);
     
 console.log(
   "Temperature matches:",
