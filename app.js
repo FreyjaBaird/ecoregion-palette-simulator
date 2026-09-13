@@ -397,7 +397,7 @@ const rainMatches = [
 const rainValues =
   rainMatches
     .slice(0,12)
-    .map(m => parseFloat(m[1]);
+    .map(m) => parseFloat(m[1]);
 
 const annualRain =
   rainValues.reduce(
@@ -482,7 +482,7 @@ console.log(
 const rainValues =
   rainMatches
     .slice(0, 12)
-    .map(m => parseFloat(m[1])));
+    .map(m => parseFloat(m[1]));
 
 console.log(
   "Rain values:",
