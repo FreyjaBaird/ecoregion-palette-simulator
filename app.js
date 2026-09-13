@@ -462,13 +462,34 @@ console.log(
         
 const rainMatches = [
   ...wikiText.matchAll(
-    /\|\s*[A-Za-z]{3}\s+rain mm\s*=\s*([\d.-]+)/gi
+    /\|\s*[A-Za-z]{3}\s+precipitation mm\s*=\s*([\d.-]+)/gi
   )
 ];
 
 console.log(
   "Rain matches:",
   rainMatches
+);
+
+const rainValues =
+  rainMatches
+    .slice(0, 12)
+    .map(m => parseFloat(m[1]));
+
+console.log(
+  "Rain values:",
+  rainValues
+);
+
+const annualRain =
+  rainValues.reduce(
+    (sum, rain) => sum + rain,
+    0
+  );
+
+console.log(
+  "Annual rainfall:",
+  annualRain
 );
 
 } catch (e) {
