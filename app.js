@@ -436,11 +436,6 @@ const pageId = Object.keys(pages)[0];
     console.log("HELLO FROM TEMP TEST");
 );
 
-const annualTemp =
-  tempValues.reduce(
-    (sum, temp) => sum + temp,
-    0
-  ) / tempValues.length;
 
 console.log(
   "Annual temperature:",
@@ -460,6 +455,13 @@ const tempValues =
   "Temperature count:",
   tempMatches.length
 );
+
+    const annualTemp =
+  tempValues.reduce(
+    (sum, temp) => sum + temp,
+    0
+  ) / tempValues.length;
+
 
   console.log(
     "Temp values:",
