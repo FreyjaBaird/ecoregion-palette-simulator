@@ -394,7 +394,7 @@ const rainMatches = [
   )
 ];
 
-const rainV*lues =
+const rainValues =
   rainMatches
     .slice(0,*12)
     .map(m => parseFloat(m[1])*;
