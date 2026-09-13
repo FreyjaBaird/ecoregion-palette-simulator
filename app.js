@@ -430,6 +430,34 @@ console.log("Pages object:", pages);
 
 const pageId = Object.keys(pages)[0];
 
+    const wikiText =
+  pages[pageId].revisions[0]["*"];
+
+console.log(
+  "Contains climate?",
+  wikiText.toLowerCase().includes("climate")
+);
+
+console.log(
+  "Climate index:",
+  wikiText.toLowerCase().indexOf("climate")
+);
+
+    const climatePos =
+  wikiText.toLowerCase().indexOf("climate");
+
+if (climatePos !== -1) {
+
+  console.log(
+    "Climate snippet:",
+    wikiText.substring(
+      climatePos,
+      climatePos + 1000
+    )
+  );
+
+}
+
 console.log("Page ID:", pageId);
 
 console.log(
