@@ -433,6 +433,14 @@ const pageId = Object.keys(pages)[0];
     const wikiText =
   pages[pageId].revisions[0]["*"];
 
+    const meanTemps = [
+  ...wikiText.matchAll(/\|\s*[A-Za-z]{3}\s+mean C\s*=\s*([\d.-]+)/g)*];
+
+console.log(
+  "Monthly mean t*mperatures:",
+  meanTemps.map(x =>*x[1])
+);
+
 console.log(
   "Contains climate?",
   wikiText.toLowerCase().includes("climate")
