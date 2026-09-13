@@ -434,11 +434,14 @@ const pageId = Object.keys(pages)[0];
   pages[pageId].revisions[0]["*"];
 
     const meanTemps = [
-  ...wikiText.matchAll(/\|\s*[A-Za-z]{3}\s+mean C\s*=\s*([\d.-]+)/g)*];
+  ...wikiText.matchAll(
+    /\|\s*[A-Za-z]{3}\s+mean C\s*=\s*([\d.-]+)/g
+  )
+];
 
 console.log(
-  "Monthly mean t*mperatures:",
-  meanTemps.map(x =>*x[1])
+  "Monthly mean temperatures:",
+  meanTemps.map(x => x[1])
 );
 
 console.log(
