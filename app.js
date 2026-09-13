@@ -244,8 +244,10 @@ async function processEcoregion(cityName) {
       const candidate = opposingPool[i];
       
       // We gather coordinates AND scrape climate data row metrics simultaneously for the whole pool!
-      const coords = await getWikipediaCoords(candidate, opposingRegion);
-      const climate = await fetchClimateMetrics(candidate, opposingRegion);
+      const [coords, climate] = await Promise.all([
+        getWikipediaCoords(candidate, opposingRegion),
+        fetchClimateMetrics(candidate, opposingRegion)
+      ]);
       
       resolvedCandidates.push({ name: candidate, coords: coords, climate: climate });
       
