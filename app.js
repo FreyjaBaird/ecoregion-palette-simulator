@@ -458,6 +458,41 @@ if (climatePos !== -1) {
 
 }
 
+    const weatherPos =
+  wikiText.indexOf("{{Weather box");
+
+console.log(
+  "Weather box index:",
+  weatherPos
+);
+
+if (weatherPos !== -1) {
+
+  console.log(
+    "Weather box snippet:",
+    wikiText.substring(
+      weatherPos,
+      weatherPos + 3000
+    )
+  );
+
+}
+
+    console.log(
+  "Contains Weather box:",
+  wikiText.includes("Weather box")
+);
+
+console.log(
+  "Contains weather box:",
+  wikiText.includes("weather box")
+);
+
+console.log(
+  "Contains climate data:",
+  wikiText.includes("climate data")
+);
+
 console.log("Page ID:", pageId);
 
 console.log(
