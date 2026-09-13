@@ -432,131 +432,44 @@ const pageId = Object.keys(pages)[0];
 
     const wikiText =
   pages[pageId].revisions[0]["*"];
-
-    console.log("HELLO FROM TEMP TEST");
-
-    const tempMatches = [
+    
+const tempMatches = [
   ...wikiText.matchAll(
     /\|\s*[A-Za-z]{3}\s+mean C\s*=\s*([\d.-]+)/g
   )
 ];
 
 const tempValues =
-  tempMatches.map(m => parseFloat(m[1]));
-    
-      console.log(
+  tempMatches
+    .slice(0, 12)
+    .map(m => parseFloat(m[1]));
+
+console.log(
   "Temperature count:",
   tempMatches.length
 );
 
-    const annualTemp =
+const annualTemp =
   tempValues.reduce(
     (sum, temp) => sum + temp,
     0
   ) / tempValues.length;
 
-    
 console.log(
   "Annual temperature:",
   annualTemp
 );
 
-  console.log(
-    "Temp values:",
-    tempValues
-);
-    
-console.log(
-  "Temperature matches:",
-  tempMatches
-);
+const rainMatches = [
+  ...wikiText.matchAll(
+    /\|\s*[A-Za-z]{3}\s+rain mm\s*=\s*([\d.-]+)/gi
+  )
+];
 
 console.log(
-  "Temperature values:",
-  tempMatches.map(m => m[1])
+  "Rain matches:",
+  rainMatches
 );
-
-console.log(
-  "Contains climate?",
-  wikiText.toLowerCase().includes("climate")
-);
-
-console.log(
-  "Climate index:",
-  wikiText.toLowerCase().indexOf("climate")
-);
-
-    const climatePos =
-  wikiText.toLowerCase().indexOf("climate");
-
-if (climatePos !== -1) {
-
-  console.log(
-    "Climate snippet:",
-    wikiText.substring(
-      climatePos,
-      climatePos + 1000
-    )
-  );
-
-}
-
-    const weatherPos =
-  wikiText.indexOf("{{Weather box");
-
-console.log(
-  "Weather box index:",
-  weatherPos
-);
-
-if (weatherPos !== -1) {
-
-  console.log(
-    "Weather box snippet:",
-    wikiText.substring(
-      weatherPos,
-      weatherPos + 3000
-    )
-  );
-
-}
-
-    console.log(
-  "Contains Weather box:",
-  wikiText.includes("Weather box")
-);
-
-console.log(
-  "Contains weather box:",
-  wikiText.includes("weather box")
-);
-
-console.log(
-  "Contains climate data:",
-  wikiText.includes("climate data")
-);
-
-console.log("Page ID:", pageId);
-
-console.log(
-  "Page data:",
-  pages[pageId]
-);
-
-    console.log(
-  "Wikipedia data:",
-  JSON.stringify(data, null, 2)
-);
-
-  } catch (e) {
-
-    console.error(
-      "Wikipedia test failed:",
-      e
-    );
-
-  }
-}
 
 function generateAutomatedPalettes(coords, floraContainerId, soilContainerId) {
   const latitudeShift = Math.abs(coords.lat);
