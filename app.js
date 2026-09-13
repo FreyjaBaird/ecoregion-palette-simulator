@@ -434,10 +434,6 @@ const pageId = Object.keys(pages)[0];
   pages[pageId].revisions[0]["*"];
 
     console.log("HELLO FROM TEMP TEST");
-
-console.log(
-  "Temp values:",
-  tempValues
 );
 
 const annualTemp =
@@ -464,6 +460,10 @@ const tempValues =
   "Temperature count:",
   tempMatches.length
 );
+
+  console.log(
+    "Temp values:",
+    tempValues
     
 console.log(
   "Temperature matches:",
