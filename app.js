@@ -435,6 +435,34 @@ const pageId = Object.keys(pages)[0];
 
     console.log("HELLO FROM TEMP TEST");
 
+    console.log(
+  "Temperature count:",
+  tempMatches.length
+);
+
+    const tempValues =
+  tempMatches.map(m => parseFloat(m[1]));
+
+console.log(
+  "Temp values:",
+  tempValues
+);
+``
+
+    const tempValues =
+  tempMatches.map(m => parseFloat(m[1]));
+
+const annualTemp =
+  tempValues.reduce(
+    (sum, temp) => sum + temp,
+    0
+  ) / tempValues.length;
+
+console.log(
+  "Annual temperature:",
+  annualTemp
+);
+
     const tempMatches = [
   ...wikiText.matchAll(
     /\|\s*[A-Za-z]{3}\s+mean C\s*=\s*([\d.-]+)/g
