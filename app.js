@@ -624,5 +624,13 @@ document.getElementById("matchMetrics").innerHTML = `
     ☔ 900 mm
   </div>
 
+  <div class="metric-chip metric-medium">
+    🍂 Mixed Temperate Canopy
+  </div>
+ 
+  <div class="metric-chip metric-poor">
+    🪨 Ultisol
+  </div>
+
   <div class="
   `
