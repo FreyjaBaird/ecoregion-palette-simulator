@@ -612,6 +612,7 @@ document.getElementById("sourceMetrics").innerHTML = `
   <div class="metric-chip metric-poor">
     🪨 Podzol
   </div>
+  `
 ;
 
 document.getElementById("matchMetrics").innerHTML = `
@@ -624,3 +625,4 @@ document.getElementById("matchMetrics").innerHTML = `
   </div>
 
   <div class="
+  `
