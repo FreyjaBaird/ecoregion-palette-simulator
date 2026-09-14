@@ -146,14 +146,14 @@ select:disabled {
 
 .eco-metrics {
   display: grid;
-  grid-template-columns: repeat(2, max-content);
+  grid-template-columns: 1fr 1fr;
   gap: 6px 8px;
-  justify-content: start;
   margin-bottom: 14px;
+  width: 100%;
 }
 
 .metric-chip {
-  white-space: nowrap;
+    white-space: nowrap;
 }
 ``
 
