@@ -596,3 +596,31 @@ if (selector && selector.value) {
 
 selector.onchange = (e) => processEcoregion(e.target.value);
 
+document.getElementById("sourceMetrics").innerHTML = `
+  <div class="metric-chip metric-good">
+    🌡️ 8.8°C
+  </div>
+
+  <div class="metric-chip metric-good">
+    ☔ 833 mm
+  </div>
+
+  <div class="metric-chip metric-medium">
+    🍂 Oakwood
+  </div>
+
+  <div class="metric-chip metric-poor">
+    🪨 Podzol
+  </div>
+`;
+
+document.getElementById("matchMetrics").innerHTML = `
+  <div class="metric-chip metric-good">
+    🌡️ 9.1°C
+  </div>
+
+  <div class="metric-chip metric-good">
+    ☔ 900 mm
+  </div>
+
+  <div class="
