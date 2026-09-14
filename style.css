@@ -116,12 +116,7 @@ select:disabled {
 
 /* Beautiful right-aligned layout element block next to headers */
 #match-justification-text {
-  font-size: 0.65rem;
-  max-width: 180px;
-  text-align: right;
-  color: var(--muted);
-  line-height: 1.3;
-  padding-top: 4px;
+  display: none;
 }
 
 #terminal-log {
