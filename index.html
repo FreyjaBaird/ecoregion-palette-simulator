@@ -10,8 +10,11 @@
 
   <div class="grid">
     <!-- Left Panel: Source Selection -->
-    <div class="panel">
+    <div class="panel source-panel">
       <h2>Source Ecoregion</h2>
+
+      <div id="sourceMetrics" class="eco-metrics"></div>
+
       <p>Select a city profile</p>
       <select id="city-selector"></select>
       
@@ -25,7 +28,7 @@
     </div>
 
     <!-- Right Panel: Symmetrical Match Display -->
-    <div class="panel">
+    <div class="panel match-panel">
       <!-- Flex Header Row that keeps things side-by-side cleanly -->
       <div class="panel-header">
         <div>
@@ -34,6 +37,8 @@
         </div>
         <div id="match-justification-text">Awaiting calculation...</div>
       </div>
+
+      <div id="matchMetrics" class="eco-metrics"></div>
       
       <select id="match-selector" disabled></select>
       
