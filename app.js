@@ -625,7 +625,7 @@ document.getElementById("matchMetrics").innerHTML = `
   </div>
 
   <div class="metric-chip metric-medium">
-    🍂 Mixed Temperate Canopy
+    🍂 Temperate
   </div>
  
   <div class="metric-chip metric-poor">
