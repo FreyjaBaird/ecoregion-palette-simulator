@@ -140,11 +140,10 @@ select:disabled {
 /* Ecological metric badges */
 
 .eco-metrics {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px 8px;
-  margin-bottom: 14px;
-  width: 100%;
+display: flex;
+flex-wrap: wrap;
+gap: 6px;
+margin-bottom: 14px;
 }
 
 .metric-chip {
