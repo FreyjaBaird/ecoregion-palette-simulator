@@ -145,12 +145,17 @@ select:disabled {
 /* Ecological metric badges */
 
 .eco-metrics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  gap: 6px 8px;
+  justify-content: start;
   margin-bottom: 14px;
 }
+
+.metric-chip {
+  white-space: nowrap;
+}
+``
 
 .metric-chip {
   padding: 4px 8px;
